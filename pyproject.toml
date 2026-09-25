@@ -7,7 +7,10 @@ authors = [
     { name = "Guilherme Dórea Almeida", email = "119114807+GuilhermeDorea@users.noreply.github.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "django>=6.1.1",
+    "faker>=40.39.0",
+]
 
 [project.scripts]
 jobhunter = "jobhunter:main"
