@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type ChangeEvent } from "react";
-import { api, errMsg, groupSkills, setFirstPage, type Option, type Options, type Profile } from "@/lib/api";
+import { ApiError, api, errMsg, groupSkills, setFirstPage, type Option, type Options, type Profile } from "@/lib/api";
 import { ErrorBox, Modal, useFetch } from "@/lib/ui";
 
 const MAX_VISIBLE = 60;
@@ -82,7 +82,8 @@ export default function Perfil() {
       setP({ ...p, stack_ids: [...p.stack_ids, ...add] });
       setGen({ busy: false, err: false, msg: add.length ? `${add.length} skill(s) adicionada(s). Revise e salve.` : "Nenhuma skill nova encontrada." });
     } catch (e) {
-      setGen({ busy: false, err: true, msg: errMsg(e) });
+      const ia = e instanceof ApiError && (e.status === 502 || e.status === 503);
+      setGen({ busy: false, err: true, msg: ia ? "Não foi possível gerar agora (IA indisponível). Tente de novo em instantes." : errMsg(e) });
     }
   }
 
@@ -107,6 +108,31 @@ export default function Perfil() {
       <h1>Perfil</h1>
       <p className="sub">É daqui que sai o filtro e o ranking das vagas.</p>
       <div className="form">
+        <div className="drop">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16" /></svg>
+          <div style={{ flex: 1 }}>
+            <b>Currículo em PDF</b><br />Guardamos só o texto. Ele vai ao Gemini apenas quando você clicar em Analisar ou em Gerar skills.
+            <div style={{ marginTop: 10 }}>
+              <label className="btn" style={{ cursor: "pointer" }}>
+                {upload.busy ? "Lendo o PDF..." : "Enviar PDF"}
+                <input type="file" accept="application/pdf" className="sr" onChange={onPdf} disabled={upload.busy} />
+              </label>
+              {upload.err && <p className="msg bad" role="alert">{upload.err}</p>}
+            </div>
+          </div>
+        </div>
+        <div className="f wide">
+          <label className="lbl" htmlFor="resume">Texto do currículo</label>
+          <textarea id="resume" className="in" rows={10} maxLength={50000} value={p.resume_text} onChange={(e) => set("resume_text", e.target.value)} placeholder="Cole aqui ou envie o PDF acima. Você pode editar o texto." />
+        </div>
+        <div className="gen wide">
+          <button type="button" className="btn" onClick={genSkills} disabled={gen.busy || !p.resume_text.trim()}>
+            {gen.busy ? "Lendo o currículo..." : "Gerar skills do currículo"}
+          </button>
+          {gen.msg && <span className={`msg ${gen.err ? "bad" : "ok"}`} role={gen.err ? "alert" : "status"}>{gen.msg}</span>}
+          {!p.resume_text.trim() && <span className="small">Envie ou cole o currículo primeiro.</span>}
+        </div>
+
         <Toggles label="Áreas" options={o.areas} value={p.areas} onChange={(v) => set("areas", v)} />
         <Toggles label="Nível" options={o.levels} value={p.levels} onChange={(v) => set("levels", v)} />
         <Toggles label="Modelo de trabalho" options={o.work_models} value={p.work_models} onChange={(v) => set("work_models", v)} />
@@ -128,13 +154,6 @@ export default function Perfil() {
 
         <div className="f wide">
           <label className="lbl" htmlFor="sk">Skills</label>
-          <div className="gen">
-            <button type="button" className="btn" onClick={genSkills} disabled={gen.busy || !p.resume_text.trim()}>
-              {gen.busy ? "Lendo o currículo..." : "Gerar skills do currículo"}
-            </button>
-            {gen.msg && <span className={`msg ${gen.err ? "bad" : "ok"}`} role={gen.err ? "alert" : "status"}>{gen.msg}</span>}
-            {!p.resume_text.trim() && <span className="small">Envie o currículo abaixo primeiro.</span>}
-          </div>
           {groupSkills(chosen.map((id) => ({ id, name: skills.get(id)! }))).map(([g, list]) => (
             <div key={g} className="sg" role="group" aria-label={`Marcadas: ${g}`}>
               <span className="sgl">{g}</span>
@@ -157,24 +176,6 @@ export default function Perfil() {
           ))}
           {pool.length > MAX_VISIBLE && <p className="small">Mostrando {MAX_VISIBLE} de {pool.length}. Digite para filtrar.</p>}
           {!pool.length && needle && <p className="small">Nenhuma skill com “{skillQ}” no catálogo.</p>}
-        </div>
-
-        <div className="drop">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16" /></svg>
-          <div style={{ flex: 1 }}>
-            <b>Currículo em PDF</b><br />Guardamos só o texto. Ele vai ao Gemini apenas quando você clicar em Analisar.
-            <div style={{ marginTop: 10 }}>
-              <label className="btn" style={{ cursor: "pointer" }}>
-                {upload.busy ? "Lendo o PDF..." : "Enviar PDF"}
-                <input type="file" accept="application/pdf" className="sr" onChange={onPdf} disabled={upload.busy} />
-              </label>
-              {upload.err && <p className="msg bad" role="alert">{upload.err}</p>}
-            </div>
-          </div>
-        </div>
-        <div className="f wide">
-          <label className="lbl" htmlFor="resume">Texto do currículo</label>
-          <textarea id="resume" className="in" rows={10} maxLength={50000} value={p.resume_text} onChange={(e) => set("resume_text", e.target.value)} placeholder="Cole aqui ou envie o PDF acima. Você pode editar o texto." />
         </div>
 
         <div className="wide savebar">
