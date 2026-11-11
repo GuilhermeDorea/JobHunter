@@ -10,8 +10,17 @@ from jobhunter.matching import classify
 from jobhunter.models import CollectorRun, Job, Stack
 from jobhunter.stacks import sync_stacks
 
-DAY = 24 * 3600
-RETRY = 6 * 3600
+DAY = timedelta(hours=24)
+RETRY = timedelta(hours=6)
+
+
+def is_due(source, now):
+    """Schedule lives in the DB, so restarting the container (every deploy) doesn't trigger extra collections."""
+    last = CollectorRun.objects.filter(source=source).order_by("-started_at").first()
+    if not last:
+        return True
+    wait = DAY if last.status == CollectorRun.Status.OK else RETRY  # FAILED, or RUNNING cut off by a restart
+    return now - last.started_at >= wait
 
 
 def run_source(name, module):
@@ -72,9 +81,7 @@ class Command(BaseCommand):
             run_many(names, self.stdout.write)
             return
         while True:
-            next_day = time.monotonic() + DAY
-            failed = run_many(names, self.stdout.write)
-            while failed and time.monotonic() + RETRY < next_day:
-                time.sleep(RETRY)
-                failed = run_many(failed, self.stdout.write)
-            time.sleep(max(0, next_day - time.monotonic()))
+            now = timezone.now()
+            if due := [n for n in names if is_due(n, now)]:
+                run_many(due, self.stdout.write)
+            time.sleep(15 * 60)

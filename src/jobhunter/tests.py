@@ -133,3 +133,21 @@ class ApiFlow(TestCase):
         self.c.get("/api/auth/csrf")
         self.call("post", "/api/auth/signup", {"email": "b@x.com", "password": "uma-senha-boa-123"})
         self.assertEqual(self.call("patch", f"/api/applications/{card['id']}", {"status": "OFFER"}).status_code, 404)
+
+
+class CollectorSchedule(TestCase):
+    def test_is_due(self):
+        from datetime import timedelta
+
+        from jobhunter.management.commands.collect import is_due
+        from jobhunter.models import CollectorRun
+
+        now = timezone.now()
+        self.assertTrue(is_due("gupy", now))  # never ran
+        run = CollectorRun.objects.create(source="gupy", status=CollectorRun.Status.OK)
+        self.assertFalse(is_due("gupy", now + timedelta(hours=23)))
+        self.assertTrue(is_due("gupy", now + timedelta(hours=24, minutes=1)))
+        run.status = CollectorRun.Status.FAILED
+        run.save()
+        self.assertFalse(is_due("gupy", now + timedelta(hours=5)))
+        self.assertTrue(is_due("gupy", now + timedelta(hours=6, minutes=1)))
