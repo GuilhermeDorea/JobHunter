@@ -24,3 +24,17 @@ It is adivised to run the application localy, so you can use your own API key, i
 - Postgres
 
 
+
+## Running (beta)
+Scope and decisions: [docs/beta-spec.md](docs/beta-spec.md).
+
+```bash
+cp .env.example .env      # fill in the secrets
+docker compose up -d --build                     # db, API (localhost:8000), daily collector, daily backup
+docker compose --profile public up -d            # + Cloudflare Tunnel (needs TUNNEL_TOKEN)
+docker compose exec web python manage.py createsuperuser   # admin at /admin
+```
+
+Dev without Docker (SQLite): `cd src && uv run python manage.py migrate && uv run python manage.py createcachetable && uv run python manage.py runserver`.
+Collect once: `uv run python manage.py collect [--source gupy]`. Tests: `uv run python manage.py test jobhunter`.
+API docs: `/api/docs`.

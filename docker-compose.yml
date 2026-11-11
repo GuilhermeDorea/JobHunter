@@ -1,0 +1,66 @@
+x-django: &django
+  build: .
+  env_file: .env
+  environment:
+    DATABASE_URL: postgres://jobhunter:${POSTGRES_PASSWORD}@db:5432/jobhunter
+  depends_on:
+    db:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: jobhunter
+      POSTGRES_DB: jobhunter
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "jobhunter"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+  web:
+    <<: *django
+    ports:
+      - "127.0.0.1:8000:8000"  # local only; the internet reaches it through the tunnel
+
+  collector:
+    <<: *django
+    command: ["python", "manage.py", "collect", "--loop"]
+    depends_on:
+      web:
+        condition: service_started  # web runs the migrations
+
+  backup:
+    image: postgres:17
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ${BACKUP_DIR:-./backups}:/backups
+    entrypoint:
+      - sh
+      - -c
+      - >
+        while true; do
+        pg_dump -h db -U jobhunter -Fc jobhunter > /backups/jobhunter-$$(date +%F).dump &&
+        ls -1t /backups/*.dump | tail -n +8 | xargs -r rm --;
+        sleep 86400; done
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    restart: unless-stopped
+    profiles: ["public"]
+
+volumes:
+  pgdata:
