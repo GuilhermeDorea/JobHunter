@@ -17,12 +17,13 @@ const iaMsg = (e: unknown) =>
   e instanceof ApiError && (e.status === 502 || e.status === 503) ? "IA indisponível agora. Tente de novo em instantes." : errMsg(e);
 
 export default function Curriculo() {
-  const got = useFetch<{ cv: Cv | null; review: CvReview | null }>("/api/profile/cv");
+  const got = useFetch<{ cv: Cv | null; review: CvReview | null; has_text: boolean }>("/api/profile/cv");
   const [cv, setCv] = useState<Cv | null>(null);
   const [review, setReview] = useState<CvReview | null>(null);
   const [busy, setBusy] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [dirty, setDirty] = useState(false);
+  const [paste, setPaste] = useState("");
 
   useEffect(() => {
     if (!got.data) return;
@@ -47,8 +48,8 @@ export default function Curriculo() {
     }
   }
 
-  const importCv = () => run("import", async () => {
-    edit(await api<Cv>("/api/profile/cv/import", { method: "POST" }));
+  const importCv = (text = "") => run("import", async () => {
+    edit(await api<Cv>("/api/profile/cv/import", { body: { text } }));
     setMsg({ ok: true, text: "Importado. Confira os campos e salve." });
   });
 
@@ -60,7 +61,7 @@ export default function Curriculo() {
       const form = new FormData();
       form.append("file", file);
       await api("/api/profile/resume", { form });
-      edit(await api<Cv>("/api/profile/cv/import", { method: "POST" }));
+      edit(await api<Cv>("/api/profile/cv/import", { body: { text: "" } }));
       setMsg({ ok: true, text: "PDF lido. Confira os campos e salve." });
     });
   };
@@ -92,10 +93,9 @@ export default function Curriculo() {
   const actions = (
     <div className="cvbar">
       <label className="btn" style={{ cursor: "pointer" }}>
-        {busy === "import" ? "Lendo..." : "Enviar PDF"}
+        {busy === "import" ? "Lendo..." : cv ? "Substituir por PDF" : "Enviar PDF"}
         <input type="file" accept="application/pdf" className="sr" onChange={onPdf} disabled={!!busy} />
       </label>
-      <button className="btn" onClick={importCv} disabled={!!busy}>Importar do Perfil</button>
       {cv && <>
         <button className="btn pri" onClick={() => save(cv)} disabled={!!busy || !dirty}>{busy === "save" ? "Salvando..." : dirty ? "Salvar" : "Salvo"}</button>
         <button className="btn" onClick={() => window.print()}>Baixar PDF</button>
@@ -108,12 +108,18 @@ export default function Curriculo() {
   return (
     <section className="screen">
       <h1>Currículo</h1>
-      <p className="sub">Monte no modelo padrão, baixe em PDF e veja o que a IA acha dele frente às vagas e às suas reprovações. Salvar também atualiza o texto usado nas outras análises.</p>
+      <p className="sub">Seu currículo, num lugar só: monte no modelo padrão, baixe em PDF e veja o que a IA acha dele frente às vagas e às suas reprovações. É ele que alimenta o Gerar skills, a candidatura assistida e a análise de reprovação. Vai ao Gemini só quando você clica em algo com IA.</p>
       {actions}
       {!cv ? (
-        <div className="note" style={{ marginTop: 20, maxWidth: 640 }}>
-          <b>Comece por aqui.</b> Envie o PDF do seu currículo (a IA separa em seções e corrige acentos) ou{" "}
-          <button className="linkbtn" onClick={() => edit({ ...BLANK, experiences: [{ ...ENTRY }], education: [{ ...ENTRY }] })}>monte do zero</button>.
+        <div className="note cvstart">
+          <p><b>Comece por aqui.</b> Envie o PDF acima (a IA separa em seções e corrige acentos), cole o texto abaixo ou{" "}
+            <button className="linkbtn" onClick={() => edit({ ...BLANK, experiences: [{ ...ENTRY }], education: [{ ...ENTRY }] })}>monte do zero</button>.</p>
+          {got.data.has_text && (
+            <p>Você já tem um currículo salvo.{" "}
+              <button className="btn" onClick={() => importCv()} disabled={!!busy}>{busy === "import" ? "Lendo..." : "Usar o currículo salvo"}</button></p>
+          )}
+          <textarea className="in" rows={6} maxLength={50000} aria-label="Texto do currículo" placeholder="Cole aqui o texto do seu currículo" value={paste} onChange={(e) => setPaste(e.target.value)} />
+          <button className="btn" onClick={() => importCv(paste)} disabled={!!busy || !paste.trim()}>Importar texto</button>
         </div>
       ) : (
         <>

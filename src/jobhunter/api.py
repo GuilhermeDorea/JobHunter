@@ -310,6 +310,11 @@ class CvReview(Schema):
 class CvOut(Schema):
     cv: Cv | None
     review: CvReview | None
+    has_text: bool  # resume text saved (PDF or pasted) that can be imported
+
+
+class CvImportIn(Schema):
+    text: str = Field("", max_length=50000)  # pasted resume; empty = use the saved text
 
 
 CV_SECTIONS = (("experiences", "Experiência"), ("projects", "Projetos"), ("education", "Formação"))
@@ -334,7 +339,7 @@ def _cv_text(cv):
 
 
 def _cv_out(p):
-    return {"cv": p.cv or None, "review": p.cv_review or None}
+    return {"cv": p.cv or None, "review": p.cv_review or None, "has_text": bool(p.resume_text.strip())}
 
 
 @api.get("/profile/cv", response=CvOut)
@@ -373,11 +378,14 @@ Currículo:
 
 
 @api.post("/profile/cv/import", response=Cv)
-def import_cv(request):
-    """Gemini turns the saved resume text into the CV editor structure. Not saved: the front reviews then PUTs."""
+def import_cv(request, data: CvImportIn):
+    """Gemini turns the resume text (pasted or saved) into the CV editor structure. Not saved: the front reviews then PUTs."""
     p = _profile(request)
+    if data.text.strip():
+        p.resume_text = data.text.strip()
+        p.save(update_fields=["resume_text"])
     if not p.resume_text.strip():
-        raise HttpError(400, "Envie o PDF ou cole o texto do currículo no Perfil antes de importar.")
+        raise HttpError(400, "Envie o PDF ou cole o texto do currículo antes de importar.")
     out = _gemini(CV_IMPORT_PROMPT.format(resume=p.resume_text[:20000]), as_json=True)
     try:
         return Cv(**out)

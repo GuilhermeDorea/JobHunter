@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type ChangeEvent } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { ApiError, api, errMsg, groupSkills, setFirstPage, type Option, type Options, type Profile } from "@/lib/api";
 import { ErrorBox, Modal, useFetch } from "@/lib/ui";
 
@@ -33,7 +34,6 @@ export default function Perfil() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [gen, setGen] = useState<{ busy: boolean; msg: string; err: boolean }>({ busy: false, msg: "", err: false });
-  const [upload, setUpload] = useState<{ busy: boolean; err: string }>({ busy: false, err: "" });
 
   useEffect(() => {
     if (prof.data) setP(prof.data);
@@ -75,8 +75,6 @@ export default function Perfil() {
     if (!p) return;
     setGen({ busy: true, msg: "", err: false });
     try {
-      // sends the current text so unsaved edits count; the server reads the saved one, so save it first
-      await api("/api/profile", { method: "PUT", body: { ...p, salary_expectation: p.salary_expectation === "" ? null : p.salary_expectation } });
       const r = await api<{ stack_ids: number[] }>("/api/profile/extract-skills", { method: "POST" });
       const add = r.stack_ids.filter((id) => !p.stack_ids.includes(id));
       setP({ ...p, stack_ids: [...p.stack_ids, ...add] });
@@ -87,50 +85,17 @@ export default function Perfil() {
     }
   }
 
-  async function onPdf(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    setUpload({ busy: true, err: "" });
-    try {
-      const form = new FormData();
-      form.append("file", file);
-      const r = await api<Profile>("/api/profile/resume", { form });
-      setP((cur) => (cur ? { ...cur, resume_text: r.resume_text } : cur));
-      setUpload({ busy: false, err: "" });
-    } catch (x) {
-      setUpload({ busy: false, err: errMsg(x) });
-    }
-  }
-
   return (
     <section className="screen">
       <h1>Perfil</h1>
-      <p className="sub">É daqui que sai o filtro e o ranking das vagas.</p>
+      <p className="sub">É daqui que sai o filtro e o ranking das vagas. O currículo fica na aba <Link href="/curriculo">Currículo</Link>.</p>
       <div className="form">
-        <div className="drop">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 20h16" /></svg>
-          <div style={{ flex: 1 }}>
-            <b>Currículo em PDF</b><br />Guardamos só o texto. Ele vai ao Gemini apenas quando você clicar em Analisar ou em Gerar skills.
-            <div style={{ marginTop: 10 }}>
-              <label className="btn" style={{ cursor: "pointer" }}>
-                {upload.busy ? "Lendo o PDF..." : "Enviar PDF"}
-                <input type="file" accept="application/pdf" className="sr" onChange={onPdf} disabled={upload.busy} />
-              </label>
-              {upload.err && <p className="msg bad" role="alert">{upload.err}</p>}
-            </div>
-          </div>
-        </div>
-        <div className="f wide">
-          <label className="lbl" htmlFor="resume">Texto do currículo</label>
-          <textarea id="resume" className="in" rows={10} maxLength={50000} value={p.resume_text} onChange={(e) => set("resume_text", e.target.value)} placeholder="Cole aqui ou envie o PDF acima. Você pode editar o texto." />
-        </div>
         <div className="gen wide">
           <button type="button" className="btn" onClick={genSkills} disabled={gen.busy || !p.resume_text.trim()}>
             {gen.busy ? "Lendo o currículo..." : "Gerar skills do currículo"}
           </button>
           {gen.msg && <span className={`msg ${gen.err ? "bad" : "ok"}`} role={gen.err ? "alert" : "status"}>{gen.msg}</span>}
-          {!p.resume_text.trim() && <span className="small">Envie ou cole o currículo primeiro.</span>}
+          {!p.resume_text.trim() && <span className="small">Envie o currículo na aba <Link href="/curriculo">Currículo</Link> primeiro.</span>}
         </div>
 
         <Toggles label="Áreas" options={o.areas} value={p.areas} onChange={(v) => set("areas", v)} />

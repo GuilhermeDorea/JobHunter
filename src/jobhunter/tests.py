@@ -162,8 +162,8 @@ class ApiFlow(TestCase):
     def test_cv_builder_and_review(self):
         self.c.get("/api/auth/csrf")
         self.call("post", "/api/auth/signup", {"email": "a@x.com", "password": "uma-senha-boa-123"})
-        self.assertEqual(self.call("get", "/api/profile/cv").json(), {"cv": None, "review": None})
-        self.assertEqual(self.call("post", "/api/profile/cv/import").status_code, 400)  # no resume text
+        self.assertEqual(self.call("get", "/api/profile/cv").json(), {"cv": None, "review": None, "has_text": False})
+        self.assertEqual(self.call("post", "/api/profile/cv/import", {}).status_code, 400)  # no resume text
         self.assertEqual(self.call("post", "/api/profile/cv/review").status_code, 400)  # nothing to review
 
         cv = {"name": "Ana", "experiences": [{"title": "Estagiária", "org": "ACME", "bullets": ["Fiz API em Flask", " "]}],
@@ -191,7 +191,7 @@ class ApiFlow(TestCase):
             client.return_value.models.generate_content.return_value.text = '{"score": "muito"}'
             self.assertEqual(self.call("post", "/api/profile/cv/review").status_code, 502)
             client.return_value.models.generate_content.return_value.text = '{"name": "Ana", "skills": [{"items": "SQL"}]}'
-            r = self.call("post", "/api/profile/cv/import")
+            r = self.call("post", "/api/profile/cv/import", {"text": "Ana, SQL"})
         self.assertEqual((r.status_code, r.json()["skills"][0]["items"]), (200, "SQL"))
 
     def test_other_users_cards_are_private(self):
