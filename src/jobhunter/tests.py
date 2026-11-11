@@ -159,6 +159,41 @@ class ApiFlow(TestCase):
             self.assertEqual(r["cover_letter"], "Carta")
             self.assertEqual(r["email"] and r["email"]["to"], email)
 
+    def test_cv_builder_and_review(self):
+        self.c.get("/api/auth/csrf")
+        self.call("post", "/api/auth/signup", {"email": "a@x.com", "password": "uma-senha-boa-123"})
+        self.assertEqual(self.call("get", "/api/profile/cv").json(), {"cv": None, "review": None})
+        self.assertEqual(self.call("post", "/api/profile/cv/import").status_code, 400)  # no resume text
+        self.assertEqual(self.call("post", "/api/profile/cv/review").status_code, 400)  # nothing to review
+
+        cv = {"name": "Ana", "experiences": [{"title": "Estagiária", "org": "ACME", "bullets": ["Fiz API em Flask", " "]}],
+              "skills": [{"group": "Backend", "items": "Python, Django"}]}
+        r = self.call("put", "/api/profile/cv", cv).json()
+        self.assertEqual(r["cv"]["experiences"][0]["bullets"], ["Fiz API em Flask"])  # blank bullet dropped
+        resume = self.call("get", "/api/profile").json()["resume_text"]
+        self.assertIn("Estagiária | ACME", resume)
+        self.assertIn("Backend: Python, Django", resume)
+
+        card = self.call("post", "/api/applications", {"job_id": self.job.id}).json()
+        self.call("patch", f"/api/applications/{card['id']}", {"status": "REJECTED", "notes": "caí no SQL"})
+        reply = ('{"score": 61, "summary": "ok", "unsupported": [{"skill": "Django", "fix": "projeto"}],'
+                 ' "gaps": [], "rewrites": [], "next_steps": ["estudar SQL"]}')
+        with patch("google.genai.Client") as client:
+            client.return_value.models.generate_content.return_value.text = reply
+            r = self.call("post", "/api/profile/cv/review").json()
+        self.assertEqual((r["score"], r["unsupported"][0]["skill"]), (61, "Django"))
+        prompt = client.return_value.models.generate_content.call_args.kwargs["contents"]
+        self.assertIn("faltam: Python, SQL", prompt)  # rejection carries the job's missing stacks
+        self.assertIn("caí no SQL", prompt)
+        self.assertEqual(self.call("get", "/api/profile/cv").json()["review"]["score"], 61)  # kept
+
+        with patch("google.genai.Client") as client:
+            client.return_value.models.generate_content.return_value.text = '{"score": "muito"}'
+            self.assertEqual(self.call("post", "/api/profile/cv/review").status_code, 502)
+            client.return_value.models.generate_content.return_value.text = '{"name": "Ana", "skills": [{"items": "SQL"}]}'
+            r = self.call("post", "/api/profile/cv/import")
+        self.assertEqual((r.status_code, r.json()["skills"][0]["items"]), (200, "SQL"))
+
     def test_other_users_cards_are_private(self):
         self.c.get("/api/auth/csrf")
         self.call("post", "/api/auth/signup", {"email": "a@x.com", "password": "uma-senha-boa-123"})

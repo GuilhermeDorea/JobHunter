@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from datetime import timezone as dt_tz
 from decimal import Decimal
+from typing import Annotated
 
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model, login, logout
@@ -232,6 +233,219 @@ def extract_skills(request):
     if not isinstance(names, list):
         raise HttpError(502, "Gemini devolveu um formato inesperado.")
     return {"stack_ids": sorted({stacks[n.lower()] for n in names if isinstance(n, str) and n.lower() in stacks})}
+
+
+# ---------- CV builder + review ----------
+
+def _gemini(contents, as_json=False):
+    """One Gemini call, retried on 5xx ("high demand" is common). 503 without a key, 502 on failure or bad JSON."""
+    import json
+    import time
+
+    if not settings.GEMINI_API_KEY:
+        raise HttpError(503, "Indisponível: servidor sem chave do Gemini.")
+    from google import genai
+    from google.genai.errors import ServerError
+
+    client = genai.Client(api_key=settings.GEMINI_API_KEY)  # keep a reference: a temporary Client is GC-closed mid-request
+    for attempt in range(3):
+        try:
+            text = client.models.generate_content(
+                model=settings.GEMINI_MODEL, contents=contents,
+                config={"response_mime_type": "application/json"} if as_json else None,
+            ).text
+            break
+        except ServerError as e:
+            if attempt == 2:
+                raise HttpError(502, f"Gemini falhou: {e.__class__.__name__}")
+            time.sleep(3 * (attempt + 1))
+        except Exception as e:
+            raise HttpError(502, f"Gemini falhou: {e.__class__.__name__}")
+    if not text:
+        raise HttpError(502, "Gemini não retornou texto.")
+    try:
+        return json.loads(text) if as_json else text
+    except ValueError:
+        raise HttpError(502, "Gemini devolveu um formato inesperado.")
+
+
+Line = Annotated[str, Field(max_length=600)]
+
+
+class CvEntry(Schema):
+    title: str = Field("", max_length=200)  # cargo, curso ou projeto
+    org: str = Field("", max_length=200)  # empresa, instituição ou tecnologias
+    place: str = Field("", max_length=100)
+    period: str = Field("", max_length=60)
+    bullets: list[Line] = Field([], max_length=12)
+
+
+class CvSkill(Schema):
+    group: str = Field("", max_length=60)
+    items: str = Field("", max_length=400)
+
+
+class Cv(Schema):
+    name: str = Field("", max_length=120)
+    location: str = Field("", max_length=100)
+    contacts: str = Field("", max_length=300)
+    summary: str = Field("", max_length=1000)
+    experiences: list[CvEntry] = Field([], max_length=15)
+    projects: list[CvEntry] = Field([], max_length=15)
+    education: list[CvEntry] = Field([], max_length=6)
+    skills: list[CvSkill] = Field([], max_length=12)
+    achievements: list[Line] = Field([], max_length=12)
+
+
+class CvReview(Schema):
+    score: int = Field(ge=0, le=100)
+    summary: str
+    unsupported: list[dict]  # [{skill, fix}] skill declarada sem experiência que comprove
+    gaps: list[dict]  # [{skill, why}] pedida pelas vagas/reprovações e ausente
+    rewrites: list[dict]  # [{before, after}]
+    next_steps: list[str]
+    created_at: str = ""
+
+
+class CvOut(Schema):
+    cv: Cv | None
+    review: CvReview | None
+
+
+CV_SECTIONS = (("experiences", "Experiência"), ("projects", "Projetos"), ("education", "Formação"))
+
+
+def _cv_text(cv):
+    """Plain-text render: saved as resume_text so the other AI features read the edited CV."""
+    out = [cv["name"], " • ".join(x for x in (cv["location"], cv["contacts"]) if x)]
+    if cv["summary"]:
+        out += ["", "Resumo", cv["summary"]]
+    for key, label in CV_SECTIONS:
+        if cv[key]:
+            out += ["", label]
+            for e in cv[key]:
+                out.append(" | ".join(x for x in (e["title"], e["org"], e["place"], e["period"]) if x))
+                out += [f"- {b}" for b in e["bullets"]]
+    if cv["skills"]:
+        out += ["", "Habilidades"] + [f"{s['group']}: {s['items']}" if s["group"] else s["items"] for s in cv["skills"]]
+    if cv["achievements"]:
+        out += ["", "Conquistas"] + [f"- {a}" for a in cv["achievements"]]
+    return "\n".join(out).strip()
+
+
+def _cv_out(p):
+    return {"cv": p.cv or None, "review": p.cv_review or None}
+
+
+@api.get("/profile/cv", response=CvOut)
+def get_cv(request):
+    return _cv_out(_profile(request))
+
+
+@api.put("/profile/cv", response=CvOut)
+def put_cv(request, data: Cv):
+    cv = data.dict()
+    for key, _ in CV_SECTIONS:
+        for e in cv[key]:
+            e["bullets"] = [b.strip() for b in e["bullets"] if b.strip()]
+    cv["achievements"] = [a.strip() for a in cv["achievements"] if a.strip()]
+    p = _profile(request)
+    p.cv, p.resume_text = cv, _cv_text(cv)[:50000]
+    p.save(update_fields=["cv", "resume_text"])
+    return _cv_out(p)
+
+
+CV_IMPORT_PROMPT = """Converta o currículo abaixo (texto extraído de PDF) para JSON neste formato exato:
+{{"name": "", "location": "", "contacts": "e-mail • github • linkedin numa linha", "summary": "",
+ "experiences": [{{"title": "cargo", "org": "empresa", "place": "cidade ou Remoto", "period": "Jan 2025–atual", "bullets": ["..."]}}],
+ "projects": [{{"title": "nome do projeto", "org": "tecnologias", "place": "", "period": "", "bullets": ["..."]}}],
+ "education": [{{"title": "curso", "org": "instituição", "place": "", "period": "", "bullets": ["disciplinas, TCC..."]}}],
+ "skills": [{{"group": "Backend", "items": "Python, Django"}}],
+ "achievements": ["..."]}}
+
+Regras: copie o conteúdo fielmente, sem inventar nem resumir. Corrija acentos quebrados pela extração do PDF
+(ex.: "Experiˆencia" -> "Experiência", "manutenc ¸˜ao" -> "manutenção"). Idiomas e certificações entram em "skills"
+(ex.: group "Inglês"). Campos ausentes ficam "" ou [].
+
+Currículo:
+{resume}
+"""
+
+
+@api.post("/profile/cv/import", response=Cv)
+def import_cv(request):
+    """Gemini turns the saved resume text into the CV editor structure. Not saved: the front reviews then PUTs."""
+    p = _profile(request)
+    if not p.resume_text.strip():
+        raise HttpError(400, "Envie o PDF ou cole o texto do currículo no Perfil antes de importar.")
+    out = _gemini(CV_IMPORT_PROMPT.format(resume=p.resume_text[:20000]), as_json=True)
+    try:
+        return Cv(**out)
+    except (TypeError, ValueError):
+        raise HttpError(502, "Gemini devolveu um formato inesperado.")
+
+
+CV_REVIEW_PROMPT = """Você é recrutador técnico de vagas de estágio, trainee e júnior em TI e engenharia no Brasil.
+Avalie o currículo abaixo com rigor e responda em português, apenas com JSON neste formato:
+{{"score": 0-100, "summary": "2-3 frases: o que o currículo comunica hoje e o maior problema",
+ "unsupported": [{{"skill": "...", "fix": "como comprovar: projeto, bullet ou tirar do currículo"}}],
+ "gaps": [{{"skill": "...", "why": "quantas vagas pedem / em que reprovação pesou"}}],
+ "rewrites": [{{"before": "bullet atual, copiado", "after": "versão melhor, com verbo de ação, tecnologia e resultado"}}],
+ "next_steps": ["ação concreta, em ordem de prioridade"]}}
+
+Critérios:
+- "unsupported": skills que o candidato declara (seção Habilidades ou skills marcadas) mas que NENHUMA experiência,
+  projeto ou formação mostra sendo usada. Recrutador desconfia disso. Seja literal: só conta se aparece no texto de uma entrada.
+- "gaps": skills pedidas com frequência pelas vagas compatíveis ou ligadas às reprovações e que não aparecem no currículo.
+  Priorize as que se repetem nas reprovações.
+- "rewrites": até 5 bullets fracos (sem resultado, vagos, longos). Não invente números; use [X] onde faltar dado.
+- Não invente fatos sobre o candidato.
+
+## Perfil
+Áreas: {areas}. Nível buscado: {levels}.
+Skills marcadas no perfil: {skills}
+
+## Skills mais pedidas nas {total} vagas compatíveis (vagas que pedem)
+{demand}
+
+## Reprovações recentes (vaga, etapa, skills da vaga que faltam no perfil, anotações)
+{rejections}
+
+## Currículo
+{cv}
+"""
+
+
+@api.post("/profile/cv/review", response=CvReview)
+def review_cv(request):
+    """Gemini reviews the CV against job demand and the user's rejections. Last review is kept on the profile."""
+    p = _profile(request)
+    text = _cv_text(p.cv) if p.cv else p.resume_text
+    if not text.strip():
+        raise HttpError(400, "Monte ou importe o currículo antes de avaliar.")
+    mine = set(p.stacks.values_list("name", flat=True))
+    jobs = jobs_for(p)
+    demand = Stack.objects.filter(job__in=jobs).annotate(n=Count("job")).order_by("-n")[:20]
+    rejected = (Application.objects.filter(user=request.user, status=Application.Status.REJECTED)
+                .select_related("job").order_by("-updated_at")[:10])
+    rejections = []
+    for a in rejected:
+        missing = sorted(set(a.job.stacks.values_list("name", flat=True)) - mine) if a.job else []
+        stage = Application.Status(a.rejected_at_stage).label if a.rejected_at_stage else "?"
+        rejections.append(f"- {a.title} ({a.company}), etapa {stage}; faltam: {', '.join(missing) or '-'}; "
+                          f"notas: {a.notes[:300] or '-'}")
+    out = _gemini(CV_REVIEW_PROMPT.format(
+        areas=", ".join(p.areas) or "-", levels=", ".join(p.levels) or "-", skills=", ".join(sorted(mine)) or "(nenhuma)",
+        total=jobs.count(), demand="\n".join(f"- {s.name}: {s.n}" for s in demand) or "(sem vagas compatíveis)",
+        rejections="\n".join(rejections) or "(nenhuma reprovação registrada)", cv=text[:20000],
+    ), as_json=True)
+    try:
+        review = CvReview(**out, created_at=timezone.now().isoformat()).dict()
+    except (TypeError, ValueError):
+        raise HttpError(502, "Gemini devolveu um formato inesperado.")
+    p.cv_review = review
+    p.save(update_fields=["cv_review"])
+    return review
 
 
 # ---------- Jobs ----------

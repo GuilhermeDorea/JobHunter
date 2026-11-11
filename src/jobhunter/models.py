@@ -79,6 +79,8 @@ class Profile(models.Model):
     salary_expectation = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     stacks = models.ManyToManyField(Stack, blank=True)
     resume_text = models.TextField(blank=True)
+    cv = models.JSONField(default=dict, blank=True)  # structured CV from the builder (api.Cv)
+    cv_review = models.JSONField(default=dict, blank=True)  # last Gemini review (api.CvReview)
     last_seen_jobs_at = models.DateTimeField(null=True, blank=True)
 
 

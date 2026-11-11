@@ -10,6 +10,7 @@ const TABS = [
   { href: "/", label: "Vagas" },
   { href: "/corrida", label: "Corrida" },
   { href: "/radar", label: "Radar" },
+  { href: "/curriculo", label: "Currículo" },
   { href: "/perfil", label: "Perfil" },
 ];
 

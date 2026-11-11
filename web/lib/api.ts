@@ -140,3 +140,15 @@ export function groupSkills<T extends { name: string }>(skills: T[]): [string, T
   for (const s of skills) out.get(SKILL_GROUP.get(s.name) ?? "Outras")!.push(s);
   return [...out].filter(([, list]) => list.length);
 }
+
+export type CvEntry = { title: string; org: string; place: string; period: string; bullets: string[] };
+export type Cv = {
+  name: string; location: string; contacts: string; summary: string;
+  experiences: CvEntry[]; projects: CvEntry[]; education: CvEntry[];
+  skills: { group: string; items: string }[]; achievements: string[];
+};
+export type CvReview = {
+  score: number; summary: string; created_at: string; next_steps: string[];
+  unsupported: { skill: string; fix: string }[]; gaps: { skill: string; why: string }[];
+  rewrites: { before: string; after: string }[];
+};
