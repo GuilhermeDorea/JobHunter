@@ -40,6 +40,10 @@ Deploy: every push to `main` runs the tests on GitHub and then `docker compose u
 docker compose exec web python manage.py createsuperuser   # admin at /admin
 ```
 
+Front (`web/`, Next.js App Router): in dev, run Django on :8000, then `cd web && npm install && npm run dev` and open http://localhost:3000.
+Next proxies `/api` and `/admin` to Django (`API_URL`, default `http://localhost:8000`; set at build time, so in Docker it is a build arg), keeping the browser same-origin.
+Django checks the `Origin` header on POSTs, so add `DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost:3000` to `.env` (or the shell) when using the dev server.
+
 Dev without Docker (SQLite): `cd src && uv run python manage.py migrate && uv run python manage.py createcachetable && uv run python manage.py runserver`.
 Collect once: `uv run python manage.py collect [--source gupy]`. Tests: `uv run python manage.py test jobhunter`.
 API docs: `/api/docs`.

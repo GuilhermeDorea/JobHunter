@@ -1,0 +1,6 @@
+{
+  "approved": true,
+  "approvedOn": "2026-11-11",
+  "by": "user, in conversation",
+  "changes": ["tabs on top instead of side rail", "selected row inverts", "company logo tile instead of area stripes", "points only", "stage-colored kanban", "no top-3 highlight", "per-column + inline new card", "rejected = small red-dot tag"]
+}

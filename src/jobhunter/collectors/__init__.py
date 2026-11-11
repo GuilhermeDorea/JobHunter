@@ -1,6 +1,6 @@
 """Job sources. Each module exposes `fetch() -> list[dict]` with normalized items:
 
-external_id, url, title, company, description, and optionally level/area (hints), contract,
+external_id, url, title, company, description, and optionally company_logo, level/area (hints), contract,
 work_model, city, state (UF), salary, published_at, deadline.
 Optional module attribute CLOSE_AFTER_DAYS: how long a job may be missing before it's marked closed.
 """
@@ -59,7 +59,7 @@ def get(url, *, robots=True, **kwargs):
 
 def html_to_text(raw):
     text = html.unescape(raw or "")  # Greenhouse double-escapes its HTML
-    text = re.sub(r"<(br|/p|/li|/h\d)[^>]*>", "\n", text, flags=re.I)
+    text = re.sub(r"<(br|/?(?:p|li|div|ul|ol|h\d))\b[^>]*>", "\n", text, flags=re.I)
     text = html.unescape(re.sub(r"<[^>]+>", "", text))
     return re.sub(r"\n{3,}", "\n\n", text.replace("\xa0", " ")).strip()
 

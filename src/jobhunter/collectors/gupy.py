@@ -46,6 +46,7 @@ def to_item(j):
         "url": j["jobUrl"],
         "title": j["name"].strip(),
         "company": j.get("careerPageName") or "Não informado",
+        "company_logo": j.get("careerPageLogo") or "",
         "description": html_to_text(j.get("description")),
         "level": _LEVEL.get(j.get("type")),
         "contract": Contract.INTERNSHIP if j.get("type") == "vacancy_type_internship" else "",

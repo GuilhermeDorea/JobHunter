@@ -30,6 +30,19 @@ services:
     ports:
       - "127.0.0.1:8000:8000"  # local only; the internet reaches it through the tunnel
 
+  next:
+    build:
+      context: ./web
+      args:
+        API_URL: http://web:8000  # baked into the Next rewrites at build time
+    environment:
+      API_URL: http://web:8000
+    ports:
+      - "127.0.0.1:3000:3000"  # local only; the tunnel sends everything except /api and /admin here
+    depends_on:
+      - web
+    restart: unless-stopped
+
   collector:
     <<: *django
     command: ["python", "manage.py", "collect", "--loop"]

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from decimal import Decimal
 from unittest.mock import patch
 
@@ -52,6 +53,7 @@ class Rules(TestCase):
         total, why = score(["Python", "SQL"], None, ["Python"], Decimal("1500"))
         self.assertEqual((total, why["matched"], why["missing"]), (50, ["Python"], ["SQL"]))  # 85*0.5 + 15*0.5
         self.assertEqual(score(["Python"], Decimal("2000"), ["Python"], Decimal("1500"))[0], 100)
+        self.assertEqual((why["skills_points"], why["salary_points"]), (42, 8))
         self.assertEqual(score([], Decimal("700"), [], Decimal("1500"))[0], 42)  # neutral skills (42.5), pay under 50% = 0
 
     def test_gupy_item(self):
@@ -97,6 +99,10 @@ class ApiFlow(TestCase):
         page = self.call("get", "/api/jobs").json()
         self.assertEqual([j["title"] for j in page["items"]], ["Estágio Python"])  # area + UF filters
         self.assertEqual(page["items"][0]["why"]["missing"], ["SQL"])
+        self.assertEqual(page["new_count"], 0)  # first visit: nothing to compare with
+        Job.objects.filter(id=self.job.id).update(first_seen=timezone.now() + timedelta(seconds=5))
+        page = self.call("get", "/api/jobs").json()
+        self.assertEqual((page["new_count"], page["items"][0]["is_new"]), (1, True))
 
         self.assertEqual(self.call("get", "/api/radar").json()["stacks"][0]["name"], "SQL")
 
@@ -151,3 +157,8 @@ class CollectorSchedule(TestCase):
         run.save()
         self.assertFalse(is_due("gupy", now + timedelta(hours=5)))
         self.assertTrue(is_due("gupy", now + timedelta(hours=6, minutes=1)))
+
+    def test_html_to_text_breaks_blocks(self):
+        from .collectors import html_to_text
+
+        self.assertEqual(html_to_text("<p>Atribuições</p><ul><li>Executar</li></ul>"), "Atribuições\n\nExecutar")

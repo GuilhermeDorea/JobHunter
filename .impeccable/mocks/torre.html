@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JobHunter · protótipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050506; --panel:#0D0D10; --row:#121216; --row-hi:#1A1A20; --line:#24242B;
+  --tx:#F4F4F5; --tx2:#A1A1AA; --tx3:#71717A;
+  --purple:#B15CFF; --green:#1FE074; --yellow:#FFD60A; --red:#FF3B30; --blue:#4C7DFF; --white:#FFFFFF;
+  --disp:'Saira Semi Condensed',system-ui,sans-serif; --body:'Barlow',system-ui,sans-serif;
+  --cut:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--bg);color:var(--tx);font:400 15px/1.5 var(--body);-webkit-font-smoothing:antialiased;scrollbar-color:#2E2E36 var(--bg)}
+::selection{background:var(--purple);color:#000}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.num{font-family:var(--disp);font-variant-numeric:tabular-nums}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:28px;padding:0 28px;height:64px;border-bottom:1px solid var(--line);position:sticky;top:0;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);z-index:5}
+.brand{display:flex;align-items:center;gap:10px;font:800 19px/1 var(--disp);letter-spacing:.04em;text-transform:uppercase;font-style:italic}
+.brand svg{width:40px;height:34px}
+.tabs{display:flex;gap:4px;align-self:stretch;align-items:center}
+.tab{font:700 14px var(--disp);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);padding:8px 18px;clip-path:var(--cut);transition:color .15s,background .15s}
+.tab:hover{color:var(--tx);background:var(--row-hi)}
+.tab[aria-current=true]{background:var(--white);color:#000}
+.search{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 12px;width:min(300px,30vw);color:var(--tx3)}
+.search input{all:unset;flex:1;color:var(--tx);font-size:14px}
+.search input::placeholder{color:var(--tx3)}
+.me{width:34px;height:34px;border-radius:50%;background:var(--row-hi);display:grid;place-items:center;font:700 12px var(--disp)}
+
+.rc{display:flex;align-items:center;gap:12px;margin:18px 28px 0;padding:10px 14px;background:var(--panel);border:1px solid var(--line);border-radius:6px}
+.flag{width:16px;height:22px;background:var(--yellow);clip-path:polygon(0 0,100% 0,100% 70%,0 100%)}
+.rc .t{font:700 12px var(--disp);letter-spacing:.12em;color:var(--yellow);text-transform:uppercase}
+.rc .m{font-size:14px}
+.rc .m b{font-family:var(--disp);font-size:16px}
+
+.screen{display:none;padding:18px 28px 48px}
+.screen.on{display:block}
+h1{font:800 34px/1 var(--disp);letter-spacing:-.01em;text-transform:uppercase}
+h2{font:700 13px var(--disp);letter-spacing:.1em;text-transform:uppercase;color:var(--tx2)}
+.sub{color:var(--tx2);font-size:14px;margin-top:6px}
+
+/* company logo tile */
+.logo{width:36px;height:36px;border-radius:6px;background:var(--white);display:grid;place-items:center;overflow:hidden;flex:none;color:#000;font:800 13px var(--disp);letter-spacing:-.02em}
+.logo img{width:100%;height:100%;object-fit:contain;padding:4px}
+
+/* tower */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;margin-top:18px;align-items:start}
+.tower{list-style:none;padding:0;display:flex;flex-direction:column;gap:3px;margin-top:16px}
+.r{display:grid;grid-template-columns:38px 36px minmax(0,1fr) 30px 92px 48px;align-items:center;gap:12px;height:58px;padding-right:14px;background:var(--row);border-radius:4px;cursor:pointer;transition:background .15s,color .15s}
+.r:hover{background:var(--row-hi)}
+.pos{height:100%;display:grid;place-items:center;font:800 17px var(--disp);background:#1E1E24;border-radius:4px 0 0 4px}
+.r:nth-child(-n+3) .pos{background:var(--white);color:#000}
+.who{min-width:0}
+.who .ti{font:700 15px/1.2 var(--disp);letter-spacing:.01em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who .co{font-size:13px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.new{font:700 10px var(--disp);letter-spacing:.1em;color:#000;background:var(--yellow);padding:1px 6px;margin-left:8px;vertical-align:2px;clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%)}
+.tyre{width:28px;height:28px;border-radius:50%;border:3px solid;display:grid;place-items:center;font:800 12px var(--disp);background:#0A0A0C;color:var(--tx)}
+.tyre.E{border-color:var(--red)} .tyre.T{border-color:var(--yellow)} .tyre.J{border-color:var(--white)}
+.sectors{display:flex;gap:3px}
+.sectors i{flex:1;height:5px;border-radius:1px;background:#2E2E36}
+.sectors i.g{background:var(--green)} .sectors i.p{background:var(--purple)}
+.pts{text-align:right;font:800 20px var(--disp)}
+.pts.best{color:var(--purple)}
+/* selected = driver in focus: the row inverts */
+.r[aria-selected=true]{background:var(--tx);color:#000}
+.r[aria-selected=true] .co{color:#52525B}
+.r[aria-selected=true] .pos{background:#000;color:var(--white)}
+.r[aria-selected=true] .sectors i:not(.g):not(.p){background:#C9C9CF}
+.r[aria-selected=true] .sectors i.g{background:#0E9F4E}
+.r[aria-selected=true] .pts.best{color:#7A1FD6}
+.r[aria-selected=true] .logo{box-shadow:0 0 0 1px #D4D4D8}
+
+.pager{display:flex;justify-content:space-between;align-items:center;margin-top:12px;color:var(--tx3);font:600 12px var(--disp);letter-spacing:.08em;text-transform:uppercase}
+.btn{display:inline-flex;align-items:center;gap:8px;font:700 13px var(--disp);letter-spacing:.08em;text-transform:uppercase;padding:10px 16px;border-radius:5px;border:1px solid var(--line);background:var(--panel);transition:background .15s,transform .1s}
+.btn:hover{background:var(--row-hi)} .btn:active{transform:translateY(1px)}
+.btn.pri{background:var(--white);color:#000;border-color:var(--white)}
+.btn.pri:hover{background:#DADADF}
+
+/* telemetry */
+.tele{background:var(--panel);border:1px solid var(--line);border-radius:8px;position:sticky;top:82px;overflow:hidden}
+.tele .hd{padding:18px;border-bottom:1px solid var(--line)}
+.tele .co{display:flex;align-items:center;gap:10px;color:var(--tx2);font-size:14px}
+.tele .ti{font:700 19px/1.15 var(--disp);text-transform:uppercase;margin-top:12px}
+.meta{display:flex;flex-wrap:wrap;gap:4px 14px;color:var(--tx2);font-size:13px;margin-top:6px}
+.score{display:flex;align-items:baseline;gap:6px;margin-top:14px}
+.big{font:800 64px/.85 var(--disp);letter-spacing:-.03em}
+.score small{font:700 16px var(--disp);color:var(--tx3)}
+.blk{padding:14px 18px;border-bottom:1px solid var(--line)}
+.bar{display:grid;grid-template-columns:62px 1fr 48px;gap:10px;align-items:center;font-size:13px;color:var(--tx2);margin-top:8px}
+.bar .tr{height:8px;background:#22222A;border-radius:2px;overflow:hidden}
+.bar .tr i{display:block;height:100%}
+.bar .v{text-align:right;color:var(--tx);font:700 14px var(--disp)}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.chip{font:600 12px var(--disp);letter-spacing:.04em;padding:3px 8px;border-radius:3px;border:1px solid}
+.chip.ok{border-color:color-mix(in srgb,var(--green) 45%,transparent);color:var(--green)}
+.chip.no{border-color:var(--line);color:var(--tx2)}
+.tele .ft{padding:14px 18px;display:flex;gap:8px}
+.tele .ft .btn.pri{flex:1;justify-content:center}
+
+/* kanban: every stage owns a color */
+.board{display:grid;grid-template-columns:repeat(5,minmax(210px,1fr));gap:10px;margin-top:20px;overflow-x:auto;padding-bottom:6px}
+.col{--c:var(--tx2);background:color-mix(in srgb,var(--c) 6%,var(--panel));border:1px solid color-mix(in srgb,var(--c) 22%,var(--line));border-radius:8px;padding:10px;min-height:360px}
+.col h3{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.col h3 .nm{font:800 13px var(--disp);letter-spacing:.1em;text-transform:uppercase;background:var(--c);color:#000;padding:4px 14px;clip-path:var(--cut)}
+.col h3 .n{font:800 22px var(--disp);color:var(--c)}
+.card{background:color-mix(in srgb,var(--c) 12%,#0E0E11);border-radius:6px;padding:10px 12px 12px;margin-bottom:6px;cursor:grab;border:1px solid transparent;transition:border-color .15s,transform .15s}
+.card:hover{border-color:color-mix(in srgb,var(--c) 55%,transparent);transform:translateY(-1px)}
+.prog{display:flex;gap:3px;margin-bottom:10px}
+.prog i{flex:1;height:3px;border-radius:1px;background:#2A2A31}
+.prog i.on{background:var(--c)}
+.card .hd{display:flex;gap:10px;align-items:center}
+.card .logo{width:30px;height:30px;font-size:11px}
+.card .ti{font:700 13px/1.2 var(--disp);text-transform:uppercase}
+.card .co{font-size:12px;color:var(--tx2)}
+.card .ln{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font:600 12px var(--disp);color:var(--tx2);letter-spacing:.04em}
+.card .ln b{color:var(--c);font-weight:700}
+.empty{border:1px dashed color-mix(in srgb,var(--c) 35%,transparent);border-radius:6px;padding:18px 12px;color:var(--tx2);font-size:13px;text-align:center}
+.s-saved{--c:#C7C7CF}.s-applied{--c:var(--blue)}.s-test{--c:var(--yellow)}.s-int{--c:var(--purple)}.s-offer{--c:var(--green)}.s-rej{--c:var(--red)}.s-wd{--c:#8A8A93}
+.dnf{margin-top:14px;display:grid;grid-template-columns:2fr 1fr;gap:10px}
+.dnf .col{min-height:0}
+.dnf .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px}
+.dnf .card{margin:0}
+.stamp{font:800 11px var(--disp);letter-spacing:.12em;color:var(--red);border:1.5px solid var(--red);padding:0 6px;transform:rotate(-3deg)}
+.ana{color:#000;background:var(--purple);font:700 11px var(--disp);letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%)}
+.ana.done{background:none;color:var(--purple);clip-path:none;padding:0}
+
+/* radar */
+.rad{margin-top:20px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+.rrow{display:grid;grid-template-columns:38px 120px minmax(0,1fr) 54px 88px;gap:12px;align-items:center;height:50px;padding-right:12px;background:var(--row);border-radius:4px;margin-bottom:3px}
+.rrow .nm{font:700 15px var(--disp);text-transform:uppercase}
+.rrow .tr{height:10px;background:#22222A;border-radius:2px;overflow:hidden}
+.rrow .tr i{display:block;height:100%;background:var(--yellow)}
+.rrow .v{font:800 17px var(--disp);text-align:right}
+.rrow .btn{padding:6px 10px;font-size:11px}
+.note{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;color:var(--tx2);font-size:14px}
+.note b{color:var(--tx)}
+
+/* profile */
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 28px;margin-top:20px;max-width:920px}
+.f label{display:block;font:700 12px var(--disp);letter-spacing:.1em;text-transform:uppercase;color:var(--tx2);margin-bottom:8px}
+.tog{display:flex;flex-wrap:wrap;gap:6px}
+.tog button{font:600 13px var(--disp);letter-spacing:.04em;padding:7px 12px;border-radius:5px;border:1px solid var(--line);background:var(--panel);color:var(--tx2)}
+.tog button[aria-pressed=true]{background:var(--white);color:#000;border-color:var(--white)}
+.in{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:9px 12px;color:var(--tx);font:inherit}
+.in:focus{outline:none;border-color:var(--tx2)}
+.drop{grid-column:1/-1;border:1px dashed #3A3A44;border-radius:8px;padding:20px;display:flex;align-items:center;gap:16px;color:var(--tx2)}
+.drop b{color:var(--tx);font-family:var(--disp);text-transform:uppercase;letter-spacing:.04em}
+
+.fake{position:fixed;right:12px;bottom:10px;font:600 11px var(--disp);letter-spacing:.08em;color:var(--tx3);text-transform:uppercase}
+
+@media (max-width:1100px){.grid,.rad{grid-template-columns:1fr}.tele{position:static}.dnf{grid-template-columns:1fr}}
+@media (max-width:760px){
+  body{padding-bottom:64px}
+  .top{padding:0 16px;gap:12px}.brand span,.me{display:none}.search{width:auto;flex:1}
+  .tabs{position:fixed;bottom:0;left:0;right:0;height:60px;background:var(--bg);border-top:1px solid var(--line);justify-content:space-around;z-index:9;padding:0 6px}
+  .tab{padding:8px 12px;font-size:13px}
+  .rc,.screen{margin-left:16px;margin-right:16px;padding-left:0;padding-right:0}
+  h1{font-size:28px}
+  .r{grid-template-columns:30px 32px minmax(0,1fr) 26px 38px;gap:10px}
+  .r .sectors{display:none}.r .logo{width:32px;height:32px}
+  .tyre{width:24px;height:24px;font-size:11px}
+  .form{grid-template-columns:1fr}
+  .rrow{grid-template-columns:30px 1fr 44px 76px}.rrow .tr{display:none}
+  .board{grid-template-columns:repeat(5,80vw);scroll-snap-type:x mandatory}.col{scroll-snap-align:start}
+  .fake{display:none}
+}
+@media (prefers-reduced-motion:no-preference){
+  .r.in{animation:slot .5s cubic-bezier(.2,.8,.2,1) backwards}
+  @keyframes slot{from{opacity:0;transform:translateY(-10px)}}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 120 100" aria-hidden="true" fill="currentColor">
+      <path d="M2 49 L32 38 L118 21 L110 35 L30 50 Z"/>
+      <path d="M33 46 L46 43 L44 80 C43 92 35 97 23 97 L2 99 L14 89 L24 88 C31 88 33 85 33 79 Z"/>
+      <path d="M63 19 L75 9 L73 83 L61 93 Z"/>
+      <path d="M98 9 L111 0 L109 76 L97 85 Z"/>
+    </svg>
+    <span>JobHunter</span>
+  </div>
+  <nav class="tabs" aria-label="Principal">
+    <button class="tab" data-go="vagas" aria-current="true">Vagas</button>
+    <button class="tab" data-go="kanban">Corrida</button>
+    <button class="tab" data-go="radar">Radar</button>
+    <button class="tab" data-go="perfil">Perfil</button>
+  </nav>
+  <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input placeholder="Buscar cargo ou empresa"></label>
+  <div class="me">GD</div>
+</header>
+
+<div class="rc" role="status"><span class="flag"></span><div><div class="t">Controle de prova</div><div class="m"><b class="num">14</b> vagas novas desde sua última visita, ontem às 22:10.</div></div></div>
+
+<main>
+  <section class="screen on" id="vagas">
+    <div class="grid">
+      <div>
+        <h1>Classificação</h1><p class="sub"><b class="num" style="color:var(--tx)">143</b> vagas no seu grid, ordenadas pelo quanto batem com seu perfil.</p>
+        <ol class="tower" id="tower" role="listbox" aria-label="Vagas"></ol>
+        <div class="pager"><span>Vagas 1–10 de 143</span><button class="btn">Próximas 10</button></div>
+      </div>
+      <aside class="tele" id="tele" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <section class="screen" id="kanban">
+    <h1>Sua corrida</h1>
+    <p class="sub">Arraste o card quando o processo avançar. Reprovou? Ele vai para os abandonos e você pode pedir uma análise.</p>
+    <div class="board" id="board"></div>
+    <div class="dnf" id="dnf"></div>
+    <div style="margin-top:14px"><button class="btn">+ Card manual</button></div>
+  </section>
+
+  <section class="screen" id="radar">
+    <h1>Radar de skills</h1>
+    <p class="sub">O que as vagas do seu grid mais pedem e você ainda não marcou.</p>
+    <div class="rad">
+      <div id="radlist"></div>
+      <div class="note"><b>Spark aparece em 42 das 143 vagas.</b> Marcar uma skill que você já sabe sobe o seu score nessas vagas na hora.</div>
+    </div>
+  </section>
+
+  <section class="screen" id="perfil">
+    <h1>Perfil</h1>
+    <p class="sub">É daqui que sai o filtro e o ranking.</p>
+    <div class="form">
+      <div class="f"><label>Áreas</label><div class="tog"><button aria-pressed="true">Software</button><button aria-pressed="true">Dados</button><button aria-pressed="false">Infra, redes e segurança</button><button aria-pressed="false">Engenharias</button></div></div>
+      <div class="f"><label>Nível</label><div class="tog"><button aria-pressed="true">Estágio</button><button aria-pressed="true">Trainee</button><button aria-pressed="false">Júnior</button></div></div>
+      <div class="f"><label>Modelo de trabalho</label><div class="tog"><button aria-pressed="true">Remoto</button><button aria-pressed="true">Híbrido</button><button aria-pressed="false">Presencial</button></div></div>
+      <div class="f"><label>Local</label><div style="display:grid;grid-template-columns:90px 1fr;gap:8px"><input class="in" value="SP"><input class="in" value="São Paulo"></div></div>
+      <div class="f"><label>Bolsa ou salário esperado</label><input class="in num" value="R$ 2.200"></div>
+      <div class="f"><label>Skills</label><div class="tog"><button aria-pressed="true">Python</button><button aria-pressed="true">SQL</button><button aria-pressed="true">Git</button><button aria-pressed="true">Pandas</button><button aria-pressed="false">+ adicionar</button></div></div>
+      <div class="drop"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg><div><b>Currículo em PDF</b><br>Guardamos só o texto. Ele vai ao Gemini apenas quando você clicar em Analisar.</div></div>
+      <div><button class="btn pri">Salvar perfil</button></div>
+    </div>
+  </section>
+</main>
+<div class="fake">Dados fictícios · logos reais vêm da Gupy</div>
+
+<script>
+const ini=c=>c.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+const logo=c=>`<span class="logo" aria-hidden="true">${ini(c)}</span>`;
+const jobs=[
+ {t:'Estágio em Engenharia de Dados',c:'Acme Pagamentos',l:'E',w:'Remoto',s:92,n:1,ok:['Python','SQL','Pandas','Git'],no:['Spark'],sal:'R$ 2.400',sk:79,ss:13},
+ {t:'Trainee Software',c:'Orbe Logística',l:'T',w:'Híbrido · SP',s:85,n:1,ok:['Python','Git','SQL'],no:['Docker','AWS'],sal:'R$ 4.500',sk:70,ss:15},
+ {t:'Estágio Analytics',c:'Varejo Aurora',l:'E',w:'Remoto',s:81,n:0,ok:['SQL','Python'],no:['Power BI'],sal:'Não informado',sk:73,ss:8},
+ {t:'Desenvolvedor Júnior Back-end',c:'Nuvem Fiscal',l:'J',w:'Remoto',s:74,n:1,ok:['Python','Git'],no:['Django','PostgreSQL'],sal:'R$ 5.000',sk:59,ss:15},
+ {t:'Estágio em BI',c:'Cooperativa Sul',l:'E',w:'Presencial · SP',s:70,n:0,ok:['SQL'],no:['Power BI','Excel'],sal:'R$ 1.800',sk:60,ss:10},
+ {t:'Trainee Dados',c:'Grupo Mirante',l:'T',w:'Híbrido · SP',s:66,n:0,ok:['Python','SQL'],no:['Spark','Airflow','AWS'],sal:'Não informado',sk:58,ss:8},
+ {t:'Estágio Suporte e Redes',c:'Telco Rio',l:'E',w:'Híbrido · SP',s:58,n:1,ok:['Linux'],no:['Redes','Cisco'],sal:'R$ 1.600',sk:50,ss:8},
+ {t:'Júnior QA',c:'Pix Labs',l:'J',w:'Remoto',s:51,n:0,ok:['Git'],no:['Cypress','JavaScript'],sal:'R$ 3.800',sk:36,ss:15},
+ {t:'Estágio Engenharia de Produção',c:'Metal Forte',l:'E',w:'Presencial · SP',s:44,n:0,ok:['Excel'],no:['SAP','Lean'],sal:'R$ 1.900',sk:34,ss:10},
+ {t:'Estágio Front-end',c:'Agência Dínamo',l:'E',w:'Remoto',s:39,n:0,ok:['Git'],no:['React','TypeScript','CSS'],sal:'R$ 1.500',sk:31,ss:8},
+];
+const LV={E:'Estágio',T:'Trainee',J:'Júnior'};
+let sel=0;
+const tower=document.getElementById('tower'),tele=document.getElementById('tele');
+const sectors=j=>[...j.ok.map(()=>`<i class="${j.s>=90?'p':'g'}"></i>`),...j.no.map(()=>'<i></i>')].join('');
+function drawTower(anim){
+ tower.innerHTML=jobs.map((j,i)=>`<li class="r${anim&&j.n?' in':''}" role="option" tabindex="0" aria-selected="${i===sel}" data-i="${i}" style="animation-delay:${i*40}ms">
+  <span class="pos">${i+1}</span>${logo(j.c)}
+  <span class="who"><div class="ti">${j.t}${j.n?'<span class="new">Nova</span>':''}</div><div class="co">${j.c} · ${j.w}</div></span>
+  <span class="tyre ${j.l}" title="${LV[j.l]}">${j.l}</span>
+  <span class="sectors" title="${j.ok.length} de ${j.ok.length+j.no.length} skills">${sectors(j)}</span>
+  <span class="pts ${i===0?'best':''}">${j.s}</span></li>`).join('');
+}
+function drawTele(){const j=jobs[sel];
+ tele.innerHTML=`<div class="hd"><div class="co">${logo(j.c)}<span>${j.c}</span></div>
+  <div class="ti">${j.t}</div><div class="meta"><span>${j.w}</span><span>${LV[j.l]}</span><span>${j.sal}</span></div>
+  <div class="score"><span class="big num" style="color:${sel===0?'var(--purple)':'var(--tx)'}">${j.s}</span><small>pontos de 100</small></div></div>
+  <div class="blk"><h2>Telemetria do score</h2>
+   <div class="bar"><span>Skills</span><span class="tr"><i style="width:${j.sk/85*100}%;background:var(--green)"></i></span><span class="v">${j.sk}/85</span></div>
+   <div class="bar"><span>Salário</span><span class="tr"><i style="width:${j.ss/15*100}%;background:var(--white)"></i></span><span class="v">${j.ss}/15</span></div></div>
+  <div class="blk"><h2>Você tem</h2><div class="chips">${j.ok.map(s=>`<span class="chip ok">${s}</span>`).join('')}</div>
+   <h2 style="margin-top:14px">Falta</h2><div class="chips">${j.no.map(s=>`<span class="chip no">${s}</span>`).join('')}</div></div>
+  <div class="ft"><button class="btn pri">Salvar na corrida</button><button class="btn">Ver vaga</button></div>`;
+}
+tower.addEventListener('click',e=>{const r=e.target.closest('.r');if(!r)return;sel=+r.dataset.i;drawTower();drawTele();tower.children[sel].focus()});
+tower.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.target.click()}});
+document.querySelectorAll('.tog button').forEach(b=>b.onclick=()=>b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')!=='true'));
+drawTower(true);drawTele();
+
+const card=(stage,t,c,ln,extra='')=>`<div class="card"><div class="prog">${[0,1,2,3,4].map(k=>`<i class="${k<=stage?'on':''}"></i>`).join('')}</div>
+ <div class="hd">${logo(c)}<div style="min-width:0"><div class="ti">${t}</div><div class="co">${c}</div></div></div><div class="ln">${ln}${extra}</div></div>`;
+const cols=[
+ ['Salva','s-saved',[['Estágio Analytics','Varejo Aurora','<span>salva há 2 dias</span>'],['Trainee Dados','Grupo Mirante','<span>prazo <b>30/11</b></span>']]],
+ ['Aplicada','s-applied',[['Estágio em Engenharia de Dados','Acme Pagamentos','<span>aplicou há 1 dia</span>'],['Estágio em BI','Cooperativa Sul','<span>aplicou há 6 dias</span>'],['Estágio Dados','Startup Lume','<span>card manual</span>']]],
+ ['Teste/Case','s-test',[['Trainee Software','Orbe Logística','<span>entregar até <b>sex</b></span>']]],
+ ['Entrevista','s-int',[['Desenvolvedor Júnior Back-end','Nuvem Fiscal','<span><b>qui 14:00</b> · técnica</span>']]],
+ ['Oferta','s-offer',[]]];
+document.getElementById('board').innerHTML=cols.map(([h,cls,cs],i)=>`<div class="col ${cls}"><h3><span class="nm">${h}</span><span class="n num">${cs.length}</span></h3>${cs.map(c=>card(i,...c)).join('')||'<div class="empty">Sua primeira oferta chega aqui.</div>'}</div>`).join('');
+document.getElementById('dnf').innerHTML=`<div class="col s-rej"><h3><span class="nm">Reprovada</span><span class="n num">2</span></h3><div class="cards">
+ ${card(3,'Estágio Ciência de Dados','Banco Horizonte','<span class="stamp">Caiu na entrevista</span>','<button class="ana done">Ver análise</button>')}
+ ${card(2,'Trainee Tech','Grupo Vértice','<span class="stamp">Caiu no teste</span>','<button class="ana">Analisar com IA</button>')}</div></div>
+ <div class="col s-wd"><h3><span class="nm">Desisti</span><span class="n num">1</span></h3>${card(0,'Estágio Front-end','Agência Dínamo','<span>há 12 dias</span>')}</div>`;
+
+const rad=[['Spark',42],['Docker',38],['Power BI',33],['AWS',29],['Airflow',21],['Excel',19],['Django',15]];
+document.getElementById('radlist').innerHTML=rad.map(([n,v],i)=>`<div class="rrow"><span class="pos" style="${i<3?'background:var(--white);color:#000':''}">${i+1}</span><span class="nm">${n}</span><span class="tr"><i style="width:${v/42*100}%"></i></span><span class="v num">${v}</span><button class="btn">Eu sei</button></div>`).join('');
+
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-current',x===b));
+ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===b.dataset.go));
+ document.querySelector('.rc').style.display=b.dataset.go==='vagas'?'':'none';
+});
+</script>
+</body>
+</html>

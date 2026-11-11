@@ -197,12 +197,15 @@ class Why(Schema):
     matched: list[str]
     missing: list[str]
     salary: str
+    skills_points: int
+    salary_points: int
 
 
 class JobOut(Schema):
     id: int
     title: str
     company: str
+    company_logo: str
     url: str
     source: str
     level: str
@@ -228,6 +231,7 @@ class JobDetail(JobOut):
 
 class JobPage(Schema):
     count: int
+    new_count: int
     page: int
     pages: int
     items: list[JobOut]
@@ -238,7 +242,7 @@ def _scored(job, profile, my_stacks, seen_before, cards):
     total, why = score(names, job.salary, my_stacks, profile.salary_expectation)
     card = cards.get(job.id)
     return {
-        **{f: getattr(job, f) for f in ("id", "title", "company", "url", "source", "level", "area", "contract",
+        **{f: getattr(job, f) for f in ("id", "title", "company", "company_logo", "url", "source", "level", "area", "contract",
                                         "work_model", "city", "state", "salary", "published_at", "deadline")},
         "stacks": names,
         "score": total,
@@ -271,7 +275,8 @@ def list_jobs(request, page: int = 1, q: str = ""):
         profile.save(update_fields=["last_seen_jobs_at"])
     pages = max(1, -(-len(items) // PAGE_SIZE))
     start = (page - 1) * PAGE_SIZE
-    return {"count": len(items), "page": page, "pages": pages, "items": items[start:start + PAGE_SIZE]}
+    new_count = sum(i["is_new"] for i in items)
+    return {"count": len(items), "new_count": new_count, "page": page, "pages": pages, "items": items[start:start + PAGE_SIZE]}
 
 
 @api.get("/jobs/{job_id}", response=JobDetail)
@@ -332,6 +337,7 @@ class ApplicationOut(Schema):
     created_at: datetime
     updated_at: datetime
     job_closed: bool
+    company_logo: str
     analysis: AnalysisOut | None
 
 
@@ -341,6 +347,7 @@ def _app_out(a):
         **{f: getattr(a, f) for f in ("id", "job_id", "title", "company", "url", "status", "rejected_at_stage",
                                       "notes", "salary", "created_at", "updated_at")},
         "job_closed": bool(a.job and a.job.closed_at),
+        "company_logo": a.job.company_logo if a.job else "",
         "analysis": last,
     }
 

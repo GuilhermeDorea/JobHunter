@@ -160,4 +160,6 @@ def score(job_stack_names, job_salary, my_stack_names, salary_expectation):
         salary_note = "Paga o que você espera ou mais" if ratio >= 1 else f"Paga {ratio:.0%} do que você espera"
 
     total = round(SKILL_WEIGHT * skill + SALARY_WEIGHT * salary)
-    return total, {"matched": matched, "missing": missing, "salary": salary_note}
+    skills_points = min(total, round(SKILL_WEIGHT * skill))  # the two parts always add up to the total
+    return total, {"matched": matched, "missing": missing, "salary": salary_note,
+                   "skills_points": skills_points, "salary_points": total - skills_points}

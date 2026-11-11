@@ -1,0 +1,430 @@
+{
+ "schemaVersion": 2,
+ "generatedAt": "2026-11-11T15:12:55.694292+00:00",
+ "title": "Design System: JobHunter",
+ "extensions": {
+  "colorMeta": {
+   "asphalt": {
+    "role": "neutral",
+    "displayName": "Asphalt",
+    "canonical": "#050506",
+    "tonalRamp": [
+     "oklch(15% 0.003 285.9)",
+     "oklch(27% 0.003 285.9)",
+     "oklch(39% 0.003 285.9)",
+     "oklch(51% 0.003 285.9)",
+     "oklch(63% 0.003 285.9)",
+     "oklch(75% 0.003 285.9)",
+     "oklch(85% 0.003 285.9)",
+     "oklch(95% 0.003 285.9)"
+    ]
+   },
+   "pit-panel": {
+    "role": "neutral",
+    "displayName": "Pit Panel",
+    "canonical": "#0D0D10",
+    "tonalRamp": [
+     "oklch(15% 0.006 285.7)",
+     "oklch(27% 0.006 285.7)",
+     "oklch(39% 0.006 285.7)",
+     "oklch(51% 0.006 285.7)",
+     "oklch(63% 0.006 285.7)",
+     "oklch(75% 0.006 285.7)",
+     "oklch(85% 0.006 285.7)",
+     "oklch(95% 0.006 285.7)"
+    ]
+   },
+   "tower-row": {
+    "role": "neutral",
+    "displayName": "Tower Row",
+    "canonical": "#121216",
+    "tonalRamp": [
+     "oklch(15% 0.008 285.6)",
+     "oklch(27% 0.008 285.6)",
+     "oklch(39% 0.008 285.6)",
+     "oklch(51% 0.008 285.6)",
+     "oklch(63% 0.008 285.6)",
+     "oklch(75% 0.008 285.6)",
+     "oklch(85% 0.008 285.6)",
+     "oklch(95% 0.008 285.6)"
+    ]
+   },
+   "tower-row-hover": {
+    "role": "neutral",
+    "displayName": "Row Hover",
+    "canonical": "#1A1A20",
+    "tonalRamp": [
+     "oklch(15% 0.012 285.4)",
+     "oklch(27% 0.012 285.4)",
+     "oklch(39% 0.012 285.4)",
+     "oklch(51% 0.012 285.4)",
+     "oklch(63% 0.012 285.4)",
+     "oklch(75% 0.012 285.4)",
+     "oklch(85% 0.012 285.4)",
+     "oklch(95% 0.012 285.4)"
+    ]
+   },
+   "grid-line": {
+    "role": "neutral",
+    "displayName": "Grid Line",
+    "canonical": "#24242B",
+    "tonalRamp": [
+     "oklch(15% 0.013 285.5)",
+     "oklch(27% 0.013 285.5)",
+     "oklch(39% 0.013 285.5)",
+     "oklch(51% 0.013 285.5)",
+     "oklch(63% 0.013 285.5)",
+     "oklch(75% 0.013 285.5)",
+     "oklch(85% 0.013 285.5)",
+     "oklch(95% 0.013 285.5)"
+    ]
+   },
+   "chalk": {
+    "role": "neutral",
+    "displayName": "Chalk",
+    "canonical": "#F4F4F5",
+    "tonalRamp": [
+     "oklch(15% 0.001 286.4)",
+     "oklch(27% 0.001 286.4)",
+     "oklch(39% 0.001 286.4)",
+     "oklch(51% 0.001 286.4)",
+     "oklch(63% 0.001 286.4)",
+     "oklch(75% 0.001 286.4)",
+     "oklch(85% 0.001 286.4)",
+     "oklch(95% 0.001 286.4)"
+    ]
+   },
+   "chalk-dim": {
+    "role": "neutral",
+    "displayName": "Chalk Dim",
+    "canonical": "#A1A1AA",
+    "tonalRamp": [
+     "oklch(15% 0.013 286.1)",
+     "oklch(27% 0.013 286.1)",
+     "oklch(39% 0.013 286.1)",
+     "oklch(51% 0.013 286.1)",
+     "oklch(63% 0.013 286.1)",
+     "oklch(75% 0.013 286.1)",
+     "oklch(85% 0.013 286.1)",
+     "oklch(95% 0.013 286.1)"
+    ]
+   },
+   "chalk-faint": {
+    "role": "neutral",
+    "displayName": "Chalk Faint",
+    "canonical": "#71717A",
+    "tonalRamp": [
+     "oklch(15% 0.014 285.9)",
+     "oklch(27% 0.014 285.9)",
+     "oklch(39% 0.014 285.9)",
+     "oklch(51% 0.014 285.9)",
+     "oklch(63% 0.014 285.9)",
+     "oklch(75% 0.014 285.9)",
+     "oklch(85% 0.014 285.9)",
+     "oklch(95% 0.014 285.9)"
+    ]
+   },
+   "fastest-purple": {
+    "role": "primary",
+    "displayName": "Fastest Purple",
+    "canonical": "#B15CFF",
+    "tonalRamp": [
+     "oklch(15% 0.234 304.6)",
+     "oklch(27% 0.234 304.6)",
+     "oklch(39% 0.234 304.6)",
+     "oklch(51% 0.234 304.6)",
+     "oklch(63% 0.234 304.6)",
+     "oklch(75% 0.234 304.6)",
+     "oklch(85% 0.234 304.6)",
+     "oklch(95% 0.234 304.6)"
+    ]
+   },
+   "race-control-yellow": {
+    "role": "primary",
+    "displayName": "Race-Control Yellow",
+    "canonical": "#FFD60A",
+    "tonalRamp": [
+     "oklch(15% 0.181 94.8)",
+     "oklch(27% 0.181 94.8)",
+     "oklch(39% 0.181 94.8)",
+     "oklch(51% 0.181 94.8)",
+     "oklch(63% 0.181 94.8)",
+     "oklch(75% 0.181 94.8)",
+     "oklch(85% 0.181 94.8)",
+     "oklch(95% 0.181 94.8)"
+    ]
+   },
+   "sector-green": {
+    "role": "secondary",
+    "displayName": "Sector Green",
+    "canonical": "#1FE074",
+    "tonalRamp": [
+     "oklch(15% 0.206 151.4)",
+     "oklch(27% 0.206 151.4)",
+     "oklch(39% 0.206 151.4)",
+     "oklch(51% 0.206 151.4)",
+     "oklch(63% 0.206 151.4)",
+     "oklch(75% 0.206 151.4)",
+     "oklch(85% 0.206 151.4)",
+     "oklch(95% 0.206 151.4)"
+    ]
+   },
+   "red-flag": {
+    "role": "secondary",
+    "displayName": "Red Flag",
+    "canonical": "#FF3B30",
+    "tonalRamp": [
+     "oklch(15% 0.232 28.7)",
+     "oklch(27% 0.232 28.7)",
+     "oklch(39% 0.232 28.7)",
+     "oklch(51% 0.232 28.7)",
+     "oklch(63% 0.232 28.7)",
+     "oklch(75% 0.232 28.7)",
+     "oklch(85% 0.232 28.7)",
+     "oklch(95% 0.232 28.7)"
+    ]
+   },
+   "applied-blue": {
+    "role": "tertiary",
+    "displayName": "Applied Blue",
+    "canonical": "#4C7DFF",
+    "tonalRamp": [
+     "oklch(15% 0.201 265.4)",
+     "oklch(27% 0.201 265.4)",
+     "oklch(39% 0.201 265.4)",
+     "oklch(51% 0.201 265.4)",
+     "oklch(63% 0.201 265.4)",
+     "oklch(75% 0.201 265.4)",
+     "oklch(85% 0.201 265.4)",
+     "oklch(95% 0.201 265.4)"
+    ]
+   },
+   "interview-orange": {
+    "role": "tertiary",
+    "displayName": "Interview Orange",
+    "canonical": "#FF8A00",
+    "tonalRamp": [
+     "oklch(15% 0.180 57.4)",
+     "oklch(27% 0.180 57.4)",
+     "oklch(39% 0.180 57.4)",
+     "oklch(51% 0.180 57.4)",
+     "oklch(63% 0.180 57.4)",
+     "oklch(75% 0.180 57.4)",
+     "oklch(85% 0.180 57.4)",
+     "oklch(95% 0.180 57.4)"
+    ]
+   },
+   "saved-gray": {
+    "role": "tertiary",
+    "displayName": "Saved Gray",
+    "canonical": "#C7C7CF",
+    "tonalRamp": [
+     "oklch(15% 0.011 286.2)",
+     "oklch(27% 0.011 286.2)",
+     "oklch(39% 0.011 286.2)",
+     "oklch(51% 0.011 286.2)",
+     "oklch(63% 0.011 286.2)",
+     "oklch(75% 0.011 286.2)",
+     "oklch(85% 0.011 286.2)",
+     "oklch(95% 0.011 286.2)"
+    ]
+   },
+   "withdrawn-gray": {
+    "role": "tertiary",
+    "displayName": "Withdrawn Gray",
+    "canonical": "#8A8A93",
+    "tonalRamp": [
+     "oklch(15% 0.013 286.0)",
+     "oklch(27% 0.013 286.0)",
+     "oklch(39% 0.013 286.0)",
+     "oklch(51% 0.013 286.0)",
+     "oklch(63% 0.013 286.0)",
+     "oklch(75% 0.013 286.0)",
+     "oklch(85% 0.013 286.0)",
+     "oklch(95% 0.013 286.0)"
+    ]
+   },
+   "tile-white": {
+    "role": "neutral",
+    "displayName": "Tile White",
+    "canonical": "#FFFFFF",
+    "tonalRamp": [
+     "oklch(15% 0.000 89.9)",
+     "oklch(27% 0.000 89.9)",
+     "oklch(39% 0.000 89.9)",
+     "oklch(51% 0.000 89.9)",
+     "oklch(63% 0.000 89.9)",
+     "oklch(75% 0.000 89.9)",
+     "oklch(85% 0.000 89.9)",
+     "oklch(95% 0.000 89.9)"
+    ]
+   }
+  },
+  "typographyMeta": {
+   "display": {
+    "displayName": "Score",
+    "purpose": "Telemetry score number only."
+   },
+   "headline": {
+    "displayName": "Page Title",
+    "purpose": "Uppercase page titles (28px on mobile)."
+   },
+   "title": {
+    "displayName": "Job Title",
+    "purpose": "Uppercase job titles in rows, panels, dialogs, cards."
+   },
+   "body": {
+    "displayName": "Body",
+    "purpose": "Barlow reading text, max 75ch."
+   },
+   "label": {
+    "displayName": "Label",
+    "purpose": "Tabs, buttons, section headings, field labels; uppercase, tracked."
+   }
+  },
+  "shadows": [],
+  "motion": [
+   {
+    "name": "state",
+    "value": "150ms",
+    "purpose": "Hover color/background/border transitions."
+   },
+   {
+    "name": "slot-in",
+    "value": "500ms cubic-bezier(.2,.8,.2,1)",
+    "purpose": "New tower rows slide into place; only with prefers-reduced-motion: no-preference."
+   },
+   {
+    "name": "sheen",
+    "value": "1.4s linear infinite",
+    "purpose": "Skeleton loading sheen."
+   }
+  ],
+  "breakpoints": [
+   {
+    "name": "stack",
+    "value": "1100px"
+   },
+   {
+    "name": "mobile",
+    "value": "760px"
+   }
+  ]
+ },
+ "components": [
+  {
+   "name": "Primary Button",
+   "kind": "button",
+   "refersTo": "button-primary",
+   "description": "White tile, black caps; the one primary action per view.",
+   "html": "<button class=\"ds-btn ds-btn-pri\">Salvar na corrida</button>",
+   "css": ".ds-btn{display:inline-flex;align-items:center;gap:8px;font:700 13px 'Saira Semi Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:10px 16px;border-radius:5px;border:1px solid #24242B;background:#0D0D10;color:#F4F4F5;cursor:pointer;transition:background .15s,transform .1s}.ds-btn:hover{background:#1A1A20}.ds-btn:active{transform:translateY(1px)}.ds-btn:focus-visible{outline:2px solid #FFD60A;outline-offset:2px}.ds-btn-pri{background:#FFFFFF;color:#000;border-color:#FFFFFF}.ds-btn-pri:hover{background:#DADADF}"
+  },
+  {
+   "name": "Secondary Button",
+   "kind": "button",
+   "refersTo": "button-secondary",
+   "description": "Pit-panel button with hairline border.",
+   "html": "<button class=\"ds-btn\">Ver vaga original</button>",
+   "css": ".ds-btn{display:inline-flex;align-items:center;gap:8px;font:700 13px 'Saira Semi Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:10px 16px;border-radius:5px;border:1px solid #24242B;background:#0D0D10;color:#F4F4F5;cursor:pointer;transition:background .15s,transform .1s}.ds-btn:hover{background:#1A1A20}.ds-btn:active{transform:translateY(1px)}.ds-btn:focus-visible{outline:2px solid #FFD60A;outline-offset:2px}"
+  },
+  {
+   "name": "Tabs",
+   "kind": "nav",
+   "refersTo": "tab",
+   "description": "Uppercase tabs; current tab is a white slanted tile.",
+   "html": "<nav class=\"ds-tabs\"><a class=\"ds-tab\" aria-current=\"page\">Vagas</a><a class=\"ds-tab\">Corrida</a><a class=\"ds-tab\">Radar</a></nav>",
+   "css": ".ds-tabs{display:flex;gap:4px;background:#050506;padding:12px}.ds-tab{font:700 14px 'Saira Semi Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#71717A;padding:8px 18px;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);cursor:pointer;transition:color .15s,background .15s}.ds-tab:hover{color:#F4F4F5;background:#1A1A20}.ds-tab[aria-current]{background:#FFFFFF;color:#000}"
+  },
+  {
+   "name": "Input",
+   "kind": "input",
+   "refersTo": "input",
+   "description": "Pit-panel field; yellow focus ring.",
+   "html": "<input class=\"ds-in\" placeholder=\"Cargo, empresa...\">",
+   "css": ".ds-in{background:#0D0D10;border:1px solid #24242B;border-radius:5px;padding:9px 12px;color:#F4F4F5;font:400 15px Barlow,sans-serif}.ds-in:focus{outline:2px solid #FFD60A;outline-offset:1px;border-color:#A1A1AA}"
+  },
+  {
+   "name": "Skill Chips",
+   "kind": "chip",
+   "refersTo": "chip",
+   "description": "Matched skill green, missing skill dim.",
+   "html": "<span class=\"ds-chip ds-ok\">Python</span> <span class=\"ds-chip ds-no\">Docker</span>",
+   "css": ".ds-chip{font:600 12px 'Saira Semi Condensed',sans-serif;letter-spacing:.04em;padding:3px 8px;border-radius:3px;border:1px solid}.ds-ok{border-color:rgba(31,224,116,.45);color:#1FE074}.ds-no{border-color:#24242B;color:#A1A1AA}"
+  },
+  {
+   "name": "Tower Row",
+   "kind": "custom",
+   "refersTo": "tower-row",
+   "description": "Ranking row: position, logo tile, title, tyre ring, sectors, points. Selected row inverts; purple only on the best score.",
+   "html": "<div class=\"ds-r\"><span class=\"ds-pos\">1</span><span class=\"ds-logo\">NU</span><span class=\"ds-who\"><b>Estágio em Dados</b><small>Nubank</small></span><span class=\"ds-tyre\">E</span><span class=\"ds-sec\"><i class=\"g\"></i><i class=\"g\"></i><i class=\"p\"></i><i></i><i></i></span><span class=\"ds-pts ds-best\">92</span></div><div class=\"ds-r\" aria-selected=\"true\"><span class=\"ds-pos\">2</span><span class=\"ds-logo\">IT</span><span class=\"ds-who\"><b>Trainee Engenharia</b><small>Itaú</small></span><span class=\"ds-tyre ds-T\">T</span><span class=\"ds-sec\"><i class=\"g\"></i><i class=\"g\"></i><i></i><i></i><i></i></span><span class=\"ds-pts\">78</span></div>",
+   "css": ".ds-r{display:grid;grid-template-columns:38px 36px minmax(0,1fr) 30px 92px 48px;align-items:center;gap:12px;height:58px;padding-right:14px;margin-bottom:3px;background:#121216;color:#F4F4F5;border-radius:4px;cursor:pointer;transition:background .15s,color .15s;font-family:'Saira Semi Condensed',sans-serif}.ds-r:hover{background:#1A1A20}.ds-pos{height:100%;display:grid;place-items:center;font-weight:800;font-size:17px;background:#1E1E24;border-radius:4px 0 0 4px}.ds-logo{width:36px;height:36px;border-radius:6px;background:#fff;color:#000;display:grid;place-items:center;font-weight:800;font-size:13px}.ds-who{display:flex;flex-direction:column;min-width:0}.ds-who b{font-weight:700;font-size:15px;text-transform:uppercase}.ds-who small{font:13px Barlow,sans-serif;color:#A1A1AA}.ds-tyre{width:28px;height:28px;border-radius:50%;border:3px solid #FF3B30;display:grid;place-items:center;font-weight:800;font-size:12px;background:#0A0A0C;color:#F4F4F5}.ds-T{border-color:#FFD60A}.ds-sec{display:flex;gap:3px}.ds-sec i{flex:1;height:5px;border-radius:1px;background:#2E2E36}.ds-sec i.g{background:#1FE074}.ds-sec i.p{background:#B15CFF}.ds-pts{text-align:right;font-weight:800;font-size:20px;font-variant-numeric:tabular-nums}.ds-best{color:#B15CFF}.ds-r[aria-selected=true]{background:#F4F4F5;color:#000}.ds-r[aria-selected=true] small{color:#52525B}.ds-r[aria-selected=true] .ds-pos{background:#000;color:#fff}.ds-r[aria-selected=true] .ds-sec i:not(.g):not(.p){background:#C9C9CF}.ds-r[aria-selected=true] .ds-sec i.g{background:#0E9F4E}.ds-r[aria-selected=true] .ds-best{color:#7A1FD6}"
+  },
+  {
+   "name": "Stage Column",
+   "kind": "card",
+   "refersTo": "panel",
+   "description": "Race-board column tinted by its stage color, slanted stage tile, card with progress strip.",
+   "html": "<div class=\"ds-col\" style=\"--c:#FF8A00\"><div class=\"ds-h\"><span class=\"ds-nm\">Entrevista</span><span class=\"ds-n\">2</span></div><div class=\"ds-card\"><div class=\"ds-prog\"><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i class=\"on\"></i><i></i></div><b>Júnior Backend</b><small>Stone</small></div></div>",
+   "css": ".ds-col{background:color-mix(in srgb,var(--c) 6%,#0D0D10);border:1px solid color-mix(in srgb,var(--c) 22%,#24242B);border-radius:8px;padding:10px;width:240px;font-family:'Saira Semi Condensed',sans-serif;color:#F4F4F5}.ds-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.ds-nm{font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase;background:var(--c);color:#000;padding:4px 14px;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}.ds-n{font-weight:800;font-size:22px;color:var(--c)}.ds-card{display:flex;flex-direction:column;background:color-mix(in srgb,var(--c) 12%,#0E0E11);border-radius:6px;padding:10px 12px 12px;border:1px solid transparent;cursor:grab;transition:border-color .15s,transform .15s}.ds-card:hover{border-color:color-mix(in srgb,var(--c) 55%,transparent);transform:translateY(-1px)}.ds-card b{font-weight:700;font-size:13px;text-transform:uppercase}.ds-card small{font:12px Barlow,sans-serif;color:#A1A1AA}.ds-prog{display:flex;gap:3px;margin-bottom:10px}.ds-prog i{flex:1;height:3px;border-radius:1px;background:#2A2A31}.ds-prog i.on{background:var(--c)}"
+  },
+  {
+   "name": "Race-Control Banner",
+   "kind": "custom",
+   "refersTo": "panel",
+   "description": "Yellow flag shape + caps title announcing what is new since the last visit.",
+   "html": "<div class=\"ds-rc\"><span class=\"ds-flag\"></span><span class=\"ds-t\">Race control</span><span class=\"ds-m\"><b>12</b> vagas novas desde sua última visita</span></div>",
+   "css": ".ds-rc{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#0D0D10;border:1px solid #24242B;border-radius:6px;color:#F4F4F5;font:14px Barlow,sans-serif}.ds-flag{width:16px;height:22px;background:#FFD60A;clip-path:polygon(0 0,100% 0,100% 70%,0 100%)}.ds-t{font:700 12px 'Saira Semi Condensed',sans-serif;letter-spacing:.12em;color:#FFD60A;text-transform:uppercase}.ds-m b{font:700 16px 'Saira Semi Condensed',sans-serif}"
+  }
+ ],
+ "narrative": {
+  "northStar": "The Timing Tower",
+  "overview": "JobHunter reads like an F1 broadcast graphic, not a SaaS dashboard. Jobs are drivers in a ranking tower on a near-black track; the selected one opens in a telemetry panel that shows exactly why it scored. Applications then run a race board where every stage owns a color. Density is high and scannable: thin rows, tabular numbers, condensed caps.\n\nThe material is broadcast overlay: flat dark panels, white slanted tiles for \"on air\" states, thin hairline borders, and color used only as data (sector bars, tyre rings, stage colors, the one purple best score). Nothing glows, nothing floats.",
+  "keyCharacteristics": [
+   "Near-black ground with three tonal steps (asphalt, pit panel, tower row) and 1px grid lines.",
+   "Saira Semi Condensed uppercase for every label, number and title; Barlow for reading text.",
+   "White slanted parallelogram tiles mark the active tab, stage names, NEW tags and the race-control flag.",
+   "Color is semantic only: purple = best, green = matched, yellow = race control/focus, stage colors on the board.",
+   "Selection inverts (light row, black text), it never outlines."
+  ],
+  "rules": [
+   {
+    "name": "The One Purple Rule",
+    "body": "Purple marks only the best score in view. No top-3 highlight, no purple accents, no purple hover.",
+    "section": "colors"
+   },
+   {
+    "name": "The Color-Is-Data Rule",
+    "body": "A saturated color must mean something (match, stage, alert, best). Companies get a white logo tile, never a per-company or per-area color.",
+    "section": "colors"
+   },
+   {
+    "name": "The Tabular Numbers Rule",
+    "body": "Every number (positions, points, counts, salaries) uses the display face with tabular figures, so the tower columns never jitter.",
+    "section": "typography"
+   },
+   {
+    "name": "The Broadcast Overlay Rule",
+    "body": "No drop shadows. Separate surfaces with tone and hairlines.",
+    "section": "elevation"
+   }
+  ],
+  "dos": [
+   "**Do** keep purple for the single best score in view.",
+   "**Do** invert the selected row (chalk background, black text) to show focus.",
+   "**Do** show companies with a white logo tile (initials fallback in black display caps).",
+   "**Do** show scores as points only (e.g. 78 /100), in tabular display numerals.",
+   "**Do** color race-board columns by stage: Salva gray, Aplicada blue, Teste/Case yellow, Entrevista orange, Oferta green, Reprovada red, Desisti gray.",
+   "**Do** use the yellow 2px outline for every focus state."
+  ],
+  "donts": [
+   "**Don't** highlight a top 3 (podium colors, medals, special rows) in rankings.",
+   "**Don't** mark selection with an outline or border; invert the row.",
+   "**Don't** assign colors per company or per area.",
+   "**Don't** convert scores to percentages, grades or stars.",
+   "**Don't** use side-stripe borders (colored left/right edge bars) on rows, cards or panels.",
+   "**Don't** add drop shadows or glows to surfaces.",
+   "**Don't** render a rejection as a red card or red text block; use the red dot and \"caiu em X\"."
+  ]
+ }
+}

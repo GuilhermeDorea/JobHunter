@@ -45,6 +45,7 @@ class Job(models.Model):
     url = models.URLField(max_length=1000)
     title = models.CharField(max_length=300)
     company = models.CharField(max_length=200, db_index=True)
+    company_logo = models.URLField(max_length=1000, blank=True)
     description = models.TextField(blank=True)
     level = models.CharField(max_length=15, choices=Level.choices)
     area = models.CharField(max_length=15, choices=Area.choices)
