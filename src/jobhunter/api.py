@@ -399,6 +399,7 @@ Critérios:
 - "gaps": skills pedidas com frequência pelas vagas compatíveis ou ligadas às reprovações e que não aparecem no currículo.
   Priorize as que se repetem nas reprovações.
 - "rewrites": até 5 bullets fracos (sem resultado, vagos, longos). Não invente números; use [X] onde faltar dado.
+  Mantenha o tempo verbal do original (experiência atual fica no presente).
 - Não invente fatos sobre o candidato.
 
 ## Perfil
