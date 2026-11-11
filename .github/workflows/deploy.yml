@@ -52,13 +52,15 @@ jobs:
       - name: Health check
         shell: powershell
         run: |
+          $urls = 'http://localhost:8000/api/options', 'http://localhost:3000/entrar'  # Django API + Next front
           foreach ($i in 1..30) {
             try {
-              if ((Invoke-WebRequest http://localhost:8000/api/options -UseBasicParsing -TimeoutSec 5).StatusCode -eq 200) { "API OK"; exit 0 }
+              $bad = $urls | Where-Object { (Invoke-WebRequest $_ -UseBasicParsing -TimeoutSec 5).StatusCode -ne 200 }
+              if (-not $bad) { "API + front OK"; exit 0 }
             } catch {}
             Start-Sleep 3
           }
-          docker compose logs web --tail 50
+          docker compose logs web next --tail 50
           exit 1
       - name: Clean old images
         if: always()
