@@ -219,7 +219,8 @@ def extract_skills(request):
     from google import genai
 
     try:
-        resp = genai.Client(api_key=settings.GEMINI_API_KEY).models.generate_content(
+        client = genai.Client(api_key=settings.GEMINI_API_KEY)  # keep a reference: a temporary Client is GC-closed mid-request
+        resp = client.models.generate_content(
             model=settings.GEMINI_MODEL,
             contents=SKILLS_PROMPT.format(catalog=", ".join(Stack.objects.values_list("name", flat=True)),
                                           resume=p.resume_text[:20000]),
@@ -498,7 +499,8 @@ def analyze(request, app_id: int):
     from google import genai
 
     try:
-        resp = genai.Client(api_key=settings.GEMINI_API_KEY).models.generate_content(
+        client = genai.Client(api_key=settings.GEMINI_API_KEY)  # keep a reference: a temporary Client is GC-closed mid-request
+        resp = client.models.generate_content(
             model=settings.GEMINI_MODEL, contents=prompt
         )
         text = resp.text

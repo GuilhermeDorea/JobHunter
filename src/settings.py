@@ -87,7 +87,7 @@ CACHES = {'default': {'BACKEND': 'django.core.cache.backends.db.DatabaseCache', 
 NINJA_NUM_PROXIES = 1
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
-GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-flash-lite-latest')
+GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-3.5-flash-lite')
 ANALYSES_PER_DAY = int(os.environ.get('ANALYSES_PER_DAY', '10'))
 
 MAILERS = {
