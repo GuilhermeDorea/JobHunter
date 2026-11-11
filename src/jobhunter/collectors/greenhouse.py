@@ -4,7 +4,7 @@ from datetime import datetime
 
 from ..matching import _fold, detect_state
 from ..models import WorkModel
-from . import get, html_to_text
+from . import favicon, get, html_to_text
 
 BOARDS = {
     "nubank": "Nubank",
@@ -15,6 +15,10 @@ BOARDS = {
     "ebanx": "EBANX",
     "inter": "Inter",
     "c6bank": "C6 Bank",
+}
+DOMAINS = {
+    "nubank": "nubank.com.br", "quintoandar": "quintoandar.com.br", "wildlifestudios": "wildlifestudios.com",
+    "vtex": "vtex.com", "stone": "stone.com.br", "ebanx": "ebanx.com", "inter": "inter.co", "c6bank": "c6bank.com.br",
 }
 
 
@@ -31,6 +35,7 @@ def to_item(slug, company, j):
         "url": j["absolute_url"],
         "title": j["title"].strip(),
         "company": company,
+        "company_logo": favicon(DOMAINS[slug]),
         "description": html_to_text(j.get("content")),
         "work_model": WorkModel.REMOTE if remote else "",
         "city": location.split(",")[0].strip() if state else "",

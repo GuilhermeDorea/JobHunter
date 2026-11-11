@@ -191,6 +191,48 @@ def upload_resume(request, file: File[UploadedFile]):
     return _profile_out(p)
 
 
+SKILLS_PROMPT = """Do currículo abaixo, liste as skills do candidato que existem EXATAMENTE neste catálogo (use os nomes idênticos):
+{catalog}
+
+Inclua só o que o currículo evidencia (projetos, cursos, experiência). Responda apenas com um array JSON de strings.
+
+Currículo:
+{resume}
+"""
+
+
+class SkillsOut(Schema):
+    stack_ids: list[int]
+
+
+@api.post("/profile/extract-skills", response=SkillsOut)
+def extract_skills(request):
+    """Gemini picks catalog skills evidenced in the saved resume text. Returns ids; the front merges and saves."""
+    import json
+
+    p = _profile(request)
+    if not p.resume_text.strip():
+        raise HttpError(400, "Envie o currículo (ou cole o texto) antes de gerar as skills.")
+    if not settings.GEMINI_API_KEY:
+        raise HttpError(503, "Indisponível: servidor sem chave do Gemini.")
+    stacks = {s.name.lower(): s.id for s in Stack.objects.all()}
+    from google import genai
+
+    try:
+        resp = genai.Client(api_key=settings.GEMINI_API_KEY).models.generate_content(
+            model=settings.GEMINI_MODEL,
+            contents=SKILLS_PROMPT.format(catalog=", ".join(Stack.objects.values_list("name", flat=True)),
+                                          resume=p.resume_text[:20000]),
+            config={"response_mime_type": "application/json"},
+        )
+        names = json.loads(resp.text)
+    except Exception as e:
+        raise HttpError(502, f"Gemini falhou: {e.__class__.__name__}")
+    if not isinstance(names, list):
+        raise HttpError(502, "Gemini devolveu um formato inesperado.")
+    return {"stack_ids": sorted({stacks[n.lower()] for n in names if isinstance(n, str) and n.lower() in stacks})}
+
+
 # ---------- Jobs ----------
 
 class Why(Schema):

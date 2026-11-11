@@ -21,6 +21,11 @@ _last_hit = {}
 _robots = {}
 
 
+def favicon(domain):
+    """Company logo for sources that give none: Google's public favicon service (no key)."""
+    return f"https://www.google.com/s2/favicons?domain={domain}&sz=128"
+
+
 class Blocked(Exception):
     """robots.txt disallows this URL."""
 

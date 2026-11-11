@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type ChangeEvent } from "react";
-import { api, errMsg, setFirstPage, type Option, type Options, type Profile } from "@/lib/api";
+import { api, errMsg, groupSkills, setFirstPage, type Option, type Options, type Profile } from "@/lib/api";
 import { ErrorBox, Modal, useFetch } from "@/lib/ui";
 
 const MAX_VISIBLE = 60;
@@ -32,6 +32,7 @@ export default function Perfil() {
   const [skillQ, setSkillQ] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [gen, setGen] = useState<{ busy: boolean; msg: string; err: boolean }>({ busy: false, msg: "", err: false });
   const [upload, setUpload] = useState<{ busy: boolean; err: string }>({ busy: false, err: "" });
 
   useEffect(() => {
@@ -67,6 +68,21 @@ export default function Perfil() {
       setMsg({ ok: false, text: errMsg(e) });
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function genSkills() {
+    if (!p) return;
+    setGen({ busy: true, msg: "", err: false });
+    try {
+      // sends the current text so unsaved edits count; the server reads the saved one, so save it first
+      await api("/api/profile", { method: "PUT", body: { ...p, salary_expectation: p.salary_expectation === "" ? null : p.salary_expectation } });
+      const r = await api<{ stack_ids: number[] }>("/api/profile/extract-skills", { method: "POST" });
+      const add = r.stack_ids.filter((id) => !p.stack_ids.includes(id));
+      setP({ ...p, stack_ids: [...p.stack_ids, ...add] });
+      setGen({ busy: false, err: false, msg: add.length ? `${add.length} skill(s) adicionada(s). Revise e salve.` : "Nenhuma skill nova encontrada." });
+    } catch (e) {
+      setGen({ busy: false, err: true, msg: errMsg(e) });
     }
   }
 
@@ -112,18 +128,33 @@ export default function Perfil() {
 
         <div className="f wide">
           <label className="lbl" htmlFor="sk">Skills</label>
-          <div className="tog" aria-label="Skills marcadas">
-            {chosen.map((id) => (
-              <button key={id} type="button" aria-pressed="true" onClick={() => set("stack_ids", p.stack_ids.filter((x) => x !== id))}>{skills.get(id)}</button>
-            ))}
-            {!chosen.length && <span className="small">Nenhuma skill marcada.</span>}
+          <div className="gen">
+            <button type="button" className="btn" onClick={genSkills} disabled={gen.busy || !p.resume_text.trim()}>
+              {gen.busy ? "Lendo o currículo..." : "Gerar skills do currículo"}
+            </button>
+            {gen.msg && <span className={`msg ${gen.err ? "bad" : "ok"}`} role={gen.err ? "alert" : "status"}>{gen.msg}</span>}
+            {!p.resume_text.trim() && <span className="small">Envie o currículo abaixo primeiro.</span>}
           </div>
+          {groupSkills(chosen.map((id) => ({ id, name: skills.get(id)! }))).map(([g, list]) => (
+            <div key={g} className="sg" role="group" aria-label={`Marcadas: ${g}`}>
+              <span className="sgl">{g}</span>
+              <div className="tog">
+                {list.map((s) => <button key={s.id} type="button" aria-pressed="true" onClick={() => set("stack_ids", p.stack_ids.filter((x) => x !== s.id))}>{s.name}</button>)}
+              </div>
+            </div>
+          ))}
+          {!chosen.length && <p className="small">Nenhuma skill marcada.</p>}
           <input id="sk" className="in" type="search" placeholder="Buscar no catálogo (Python, SQL, Docker...)" value={skillQ} onChange={(e) => setSkillQ(e.target.value)} style={{ marginTop: 12 }} />
-          <div className="tog" style={{ marginTop: 8 }}>
-            {pool.slice(0, MAX_VISIBLE).map((s) => (
-              <button key={s.id} type="button" aria-pressed="false" onClick={() => set("stack_ids", [...p.stack_ids, s.id])}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> {s.name}</button>
-            ))}
-          </div>
+          {groupSkills(pool.slice(0, MAX_VISIBLE)).map(([g, list]) => (
+            <div key={g} className="sg" role="group" aria-label={`Catálogo: ${g}`}>
+              <span className="sgl">{g}</span>
+              <div className="tog">
+                {list.map((s) => (
+                  <button key={s.id} type="button" aria-pressed="false" onClick={() => set("stack_ids", [...p.stack_ids, s.id])}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> {s.name}</button>
+                ))}
+              </div>
+            </div>
+          ))}
           {pool.length > MAX_VISIBLE && <p className="small">Mostrando {MAX_VISIBLE} de {pool.length}. Digite para filtrar.</p>}
           {!pool.length && needle && <p className="small">Nenhuma skill com “{skillQ}” no catálogo.</p>}
         </div>

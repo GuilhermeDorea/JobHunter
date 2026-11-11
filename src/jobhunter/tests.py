@@ -131,6 +131,16 @@ class ApiFlow(TestCase):
         self.assertEqual(self.call("post", "/api/auth/delete", {"password": creds["password"]}).status_code, 204)
         self.assertEqual(self.call("get", "/api/auth/me").status_code, 401)
 
+    def test_extract_skills(self):
+        self.c.get("/api/auth/csrf")
+        self.call("post", "/api/auth/signup", {"email": "a@x.com", "password": "uma-senha-boa-123"})
+        self.assertEqual(self.call("post", "/api/profile/extract-skills").status_code, 400)  # no resume
+        self.call("put", "/api/profile", {"resume_text": "Projetos em Python e SQL."})
+        with patch("google.genai.Client") as client:
+            client.return_value.models.generate_content.return_value.text = '["python", "Inventada", "SQL"]'
+            r = self.call("post", "/api/profile/extract-skills")
+        self.assertEqual(r.json()["stack_ids"], sorted(Stack.objects.filter(name__in=["Python", "SQL"]).values_list("id", flat=True)))
+
     def test_other_users_cards_are_private(self):
         self.c.get("/api/auth/csrf")
         self.call("post", "/api/auth/signup", {"email": "a@x.com", "password": "uma-senha-boa-123"})

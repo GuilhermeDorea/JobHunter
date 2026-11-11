@@ -121,3 +121,22 @@ export const getFirstPage = () => firstPage;
 export const setFirstPage = (p: JobPage | null) => {
   firstPage = p;
 };
+
+// Skill catalog grouping (names come from src/jobhunter/stacks.py). Unknown names fall into "Outras".
+const SKILL_GROUPS: Record<string, string[]> = {
+  "Linguagens": ["Python", "Java", "JavaScript", "TypeScript", "C", "C++", "C#", "Go", "Rust", "Kotlin", "Swift", "PHP", "Ruby", "R", "Scala", "Dart", "Elixir", "Delphi", "VBA", "Shell/Bash"],
+  "Frameworks e web": ["HTML/CSS", "React", "React Native", "Next.js", "Vue", "Angular", "Node.js", "NestJS", "Express", "Django", "Flask", "FastAPI", "Spring", ".NET", "Laravel", "Flutter", "Tailwind", "GraphQL", "REST"],
+  "Dados e IA": ["SQL", "PostgreSQL", "MySQL", "SQL Server", "Oracle", "MongoDB", "Redis", "Excel", "Power BI", "Tableau", "Pandas", "NumPy", "Spark", "Airflow", "dbt", "Machine Learning", "Deep Learning", "Estatística", "LLM/IA generativa"],
+  "Infra e cloud": ["Linux", "Windows Server", "Docker", "Kubernetes", "AWS", "Azure", "GCP", "Terraform", "CI/CD", "Redes", "Segurança da informação"],
+  "Ferramentas e processos": ["Git", "Testes automatizados", "Scrum/Ágil", "Lean/Six Sigma", "Pacote Office", "SAP"],
+  "Engenharia": ["AutoCAD", "SolidWorks", "Revit", "MATLAB", "CLP/PLC", "Arduino/Embarcados", "Inventor", "CATIA", "Ansys/FEA"],
+  "Idiomas": ["Inglês", "Espanhol"],
+};
+const SKILL_GROUP = new Map(Object.entries(SKILL_GROUPS).flatMap(([g, names]) => names.map((n) => [n, g] as const)));
+
+export function groupSkills<T extends { name: string }>(skills: T[]): [string, T[]][] {
+  const out = new Map<string, T[]>(Object.keys(SKILL_GROUPS).map((g) => [g, []]));
+  out.set("Outras", []);
+  for (const s of skills) out.get(SKILL_GROUP.get(s.name) ?? "Outras")!.push(s);
+  return [...out].filter(([, list]) => list.length);
+}
