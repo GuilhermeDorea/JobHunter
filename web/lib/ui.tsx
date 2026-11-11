@@ -136,6 +136,90 @@ function Bar({ label, value, max, color }: { label: string; value: number; max: 
   );
 }
 
+type Prepared = { cover_letter: string; why_company: string; email: { to: string; subject: string; body: string } | null };
+
+function Copy({ title, text }: { title: string; text: string }) {
+  const [ok, setOk] = useState(false);
+  return (
+    <div className="blk">
+      <h3 className="h2">{title}</h3>
+      <p className="small" style={{ whiteSpace: "pre-wrap", color: "var(--tx)" }}>{text}</p>
+      <button className="btn" style={{ marginTop: 8 }} onClick={() => navigator.clipboard.writeText(text).then(() => setOk(true))}>
+        {ok ? "Copiado" : "Copiar"}
+      </button>
+    </div>
+  );
+}
+
+/** Button + modal: Gemini drafts texts for the job; "Marcar como aplicada" reuses POST/PATCH /applications. */
+function PrepareApplication({ job }: { job: Job | JobDetail }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [data, setData] = useState<Prepared | null>(null);
+  const [applied, setApplied] = useState(false);
+  const run = async (fn: () => Promise<void>) => {
+    setBusy(true);
+    setError("");
+    try {
+      await fn();
+    } catch (e) {
+      setError(errMsg(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const prepare = () =>
+    run(async () => {
+      setOpen(true);
+      if (!data) setData(await api<Prepared>(`/api/jobs/${job.id}/prepare-application`, { method: "POST" }));
+    });
+  const markApplied = () =>
+    run(async () => {
+      const id = job.application_id ?? (await api<{ id: number }>("/api/applications", { body: { job_id: job.id } })).id;
+      await api(`/api/applications/${id}`, { method: "PATCH", body: { status: "APPLIED" } });
+      setApplied(true);
+    });
+  const mail = data?.email;
+  return (
+    <>
+      <button className="btn" onClick={prepare} disabled={busy}>{busy && !open ? "Preparando..." : "Preparar candidatura"}</button>
+      {open && (
+        <Modal label="Preparar candidatura" onClose={() => setOpen(false)}>
+          <h2 className="h2">{job.title} · {job.company}</h2>
+          {busy && !data && <p className="small">Gerando textos com o Gemini...</p>}
+          {error && <p className="msg bad" role="alert">{error}</p>}
+          {data && (
+            <>
+              <Copy title="Carta de apresentação" text={data.cover_letter} />
+              <Copy title="Por que esta empresa" text={data.why_company} />
+              {mail && (
+                <>
+                  <Copy title={`E-mail para ${mail.to}`} text={mail.body} />
+                  <div>
+                    <a className="btn" target="_blank" rel="noopener noreferrer"
+                      href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(mail.to)}&su=${encodeURIComponent(mail.subject)}&body=${encodeURIComponent(mail.body)}`}>
+                      Abrir no Gmail
+                    </a>
+                    <p className="small">Anexe seu currículo em PDF antes de enviar.</p>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+          <div className="ft" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <a className="btn" href={job.url} target="_blank" rel="noopener noreferrer">Abrir vaga</a>
+            <button className="btn pri" onClick={markApplied} disabled={busy || applied}>
+              {applied ? "Marcada como aplicada" : "Marcar como aplicada"}
+            </button>
+            <button className="btn" onClick={() => setOpen(false)}>Fechar</button>
+          </div>
+        </Modal>
+      )}
+    </>
+  );
+}
+
 /** Side panel / detail header: why the job scored what it scored. */
 export function Telemetry({
   job, best, onSave, saving, error, children,
@@ -185,6 +269,7 @@ export function Telemetry({
           <button className="btn pri" onClick={onSave} disabled={saving}>{saving ? "Salvando..." : "Salvar na corrida"}</button>
         )}
         <a className="btn" href={job.url} target="_blank" rel="noopener noreferrer">Ver vaga original</a>
+        <PrepareApplication job={job} />
       </div>
       {error && <p className="msg bad" role="alert" style={{ padding: "0 18px 14px" }}>{error}</p>}
     </>

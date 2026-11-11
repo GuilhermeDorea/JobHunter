@@ -330,6 +330,60 @@ def job_detail(request, job_id: int):
     return {**_scored(job, profile, my_stacks, None, _cards(request.user)), "description": job.description}
 
 
+PREPARE_PROMPT = """Você ajuda um candidato a se candidatar. Use APENAS fatos presentes no currículo; não invente nada.
+Escreva em português do Brasil, a menos que a vaga esteja em inglês (então em inglês).
+Responda só JSON com as chaves:
+"cover_letter": carta de apresentação curta, 120 a 180 palavras;
+"why_company": 2 a 3 frases sobre por que a empresa/vaga interessa ao candidato;
+"email_body": a carta adaptada para corpo de e-mail, terminando com uma linha pedindo que vejam o currículo em anexo.
+
+## Vaga: {title} na {company}
+{description}
+
+## Currículo
+{resume}
+"""
+
+
+class PrepareOut(Schema):
+    cover_letter: str
+    why_company: str
+    email: dict | None
+
+
+@api.post("/jobs/{job_id}/prepare-application", response=PrepareOut)
+def prepare_application(request, job_id: int):
+    """Gemini drafts cover letter, 'why this company' and (if the posting lists an e-mail) an application e-mail."""
+    import json
+    import re
+
+    p = _profile(request)
+    if not p.resume_text.strip():
+        raise HttpError(400, "Envie o currículo (ou cole o texto) antes de preparar a candidatura.")
+    if not settings.GEMINI_API_KEY:
+        raise HttpError(503, "Indisponível: servidor sem chave do Gemini.")
+    job = get_object_or_404(Job, id=job_id)
+    from google import genai
+
+    try:
+        client = genai.Client(api_key=settings.GEMINI_API_KEY)  # keep a reference: a temporary Client is GC-closed mid-request
+        resp = client.models.generate_content(
+            model=settings.GEMINI_MODEL,
+            contents=PREPARE_PROMPT.format(title=job.title, company=job.company,
+                                           description=job.description[:8000], resume=p.resume_text[:20000]),
+            config={"response_mime_type": "application/json"},
+        )
+        out = json.loads(resp.text)
+        letter, why, body = (str(out[k]) for k in ("cover_letter", "why_company", "email_body"))
+    except (KeyError, TypeError, ValueError):
+        raise HttpError(502, "Gemini devolveu um formato inesperado.")
+    except Exception as e:
+        raise HttpError(502, f"Gemini falhou: {e.__class__.__name__}")
+    m = re.search(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+", job.description)
+    email = {"to": m.group(0), "subject": f"Candidatura: {job.title}", "body": body} if m else None
+    return {"cover_letter": letter, "why_company": why, "email": email}
+
+
 @api.get("/radar")
 def radar(request, limit: int = 10):
     """Stacks most requested by the jobs that fit your filters, that you haven't marked yet."""

@@ -144,6 +144,21 @@ class ApiFlow(TestCase):
             r = self.call("post", "/api/profile/extract-skills")
         self.assertEqual(r.json()["stack_ids"], sorted(Stack.objects.filter(name__in=["Python", "SQL"]).values_list("id", flat=True)))
 
+    def test_prepare_application(self):
+        self.c.get("/api/auth/csrf")
+        self.call("post", "/api/auth/signup", {"email": "a@x.com", "password": "uma-senha-boa-123"})
+        url = f"/api/jobs/{self.job.id}/prepare-application"
+        self.assertEqual(self.call("post", url).status_code, 400)  # no resume
+        self.call("put", "/api/profile", {"resume_text": "Projetos em Python."})
+        reply = '{"cover_letter": "Carta", "why_company": "Porque sim", "email_body": "Corpo"}'
+        for desc, email in (("Envie CV para rh@acme.com.br hoje", "rh@acme.com.br"), ("Sem contato", None)):
+            Job.objects.filter(id=self.job.id).update(description=desc)
+            with patch("google.genai.Client") as client:
+                client.return_value.models.generate_content.return_value.text = reply
+                r = self.call("post", url).json()
+            self.assertEqual(r["cover_letter"], "Carta")
+            self.assertEqual(r["email"] and r["email"]["to"], email)
+
     def test_other_users_cards_are_private(self):
         self.c.get("/api/auth/csrf")
         self.call("post", "/api/auth/signup", {"email": "a@x.com", "password": "uma-senha-boa-123"})
