@@ -32,6 +32,11 @@ Scope and decisions: [docs/beta-spec.md](docs/beta-spec.md).
 cp .env.example .env      # fill in the secrets
 docker compose up -d --build                     # db, API (localhost:8000), daily collector, daily backup
 docker compose --profile public up -d            # + Cloudflare Tunnel (needs TUNNEL_TOKEN)
+```
+
+Deploy: every push to `main` runs the tests on GitHub and then `docker compose up -d --build` on the self-hosted runner `jobhunter-pc` (label `jobhunter`), using `D:/jobhunter/.env`. Backups go to `D:/jobhunter/backups`.
+
+```bash
 docker compose exec web python manage.py createsuperuser   # admin at /admin
 ```
 

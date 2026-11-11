@@ -1,0 +1,54 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen
+      - run: uv run python manage.py test jobhunter
+        working-directory: src
+
+  deploy:
+    # Only main deploys; PRs stop at the tests and never reach the PC.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: test
+    runs-on: [self-hosted, jobhunter]
+    env:
+      PROD_DIR: D:\jobhunter  # holds .env and backups/, outside the runner workspace
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and restart
+        shell: powershell
+        run: |
+          Copy-Item "$env:PROD_DIR\.env" .env -Force
+          $profileArgs = @()
+          if (Select-String -Path .env -Pattern '^TUNNEL_TOKEN=.+' -Quiet) { $profileArgs = '--profile', 'public' }
+          docker compose @profileArgs up -d --build --remove-orphans
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Health check
+        shell: powershell
+        run: |
+          foreach ($i in 1..30) {
+            try {
+              if ((Invoke-WebRequest http://localhost:8000/api/options -UseBasicParsing -TimeoutSec 5).StatusCode -eq 200) { "API OK"; exit 0 }
+            } catch {}
+            Start-Sleep 3
+          }
+          docker compose logs web --tail 50
+          exit 1
+      - name: Clean old images
+        if: always()
+        shell: powershell
+        run: docker image prune -f

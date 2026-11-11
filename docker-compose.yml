@@ -1,3 +1,5 @@
+name: jobhunter  # fixed project name: deploys from any folder reuse the same containers and volume
+
 x-django: &django
   build: .
   env_file: .env
