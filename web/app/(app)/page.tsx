@@ -111,7 +111,7 @@ function Page({ page, q }: { page: number; q: string }) {
                         <span className="pos num">{from + i + 1}</span>
                         <Logo company={j.company} src={j.company_logo} />
                         <span className="who">
-                          <div className="ti">{j.title}{j.is_new && <span className="new">Nova</span>}</div>
+                          <div className="ti">{j.title}{j.is_new && <span className="new">Nova</span>}{j.work_model === "ON_SITE" && <span className="tag-pres">Presencial</span>}</div>
                           <div className="co">{j.company} · {where(j)}</div>
                           <Sectors j={j} best={best} mobile />
                         </span>
@@ -146,12 +146,9 @@ function Page({ page, q }: { page: number; q: string }) {
 function Sectors({ j, best, mobile }: { j: Job; best: boolean; mobile?: boolean }) {
   const none = j.why.matched.length + j.why.missing.length === 0;
   return (
-    <span className={`sectors${mobile ? " msec" : ""}${none ? " none" : ""}`} aria-hidden={mobile || undefined}
+    <span className={`sectors${mobile ? " msec" : ""}`} aria-hidden={mobile || undefined}
       title={none ? "Nenhuma skill identificada na vaga" : `${j.why.matched.length} de ${j.stacks.length} skills`}>
-      {none ? [0, 1, 2, 3, 4].map((k) => <i key={k} />) : <>
-        {j.why.matched.map((s) => <i key={s} className={best ? "p" : "g"} />)}
-        {j.why.missing.map((s) => <i key={s} />)}
-      </>}
+      <i className={best ? "p" : "g"} style={{ width: `${j.score}%` }} />
     </span>
   );
 }

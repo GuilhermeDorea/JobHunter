@@ -44,6 +44,18 @@ _AREAS = [
 ]
 
 
+# Engenharias alheias à computação: não valem como "Engenharia" relevante (nem coletadas, nem ranqueadas).
+# Sem fronteira de palavra para servir também de iregex no banco; "mecatrônica" não casa "mecânic".
+ALIEN_ENG = r"civil|produ[cç][aã]o|mec[aâ]nic|qu[ií]mic|el[eé]trica|ambiental|minas|petr[oó]leo|naval|agr[oô]nom|sanit[aá]ri|de alimentos|t[eê]xtil|metal[uú]rgic"
+_ALIEN = re.compile(ALIEN_ENG, re.I)
+
+
+# Engenharias alheias à computação: não valem como "Engenharia" relevante (nem coletadas, nem ranqueadas).
+# Sem fronteira de palavra para servir também de iregex no banco; "mecatrônica" não casa "mecânic".
+ALIEN_ENG = r"civil|produ[cç][aã]o|mec[aâ]nic|qu[ií]mic|el[eé]trica|ambiental|minas|petr[oó]leo|naval|agr[oô]nom|sanit[aá]ri|de alimentos|t[eê]xtil|metal[uú]rgic"
+_ALIEN = re.compile(ALIEN_ENG, re.I)
+
+
 def detect_level(title, hint=None):
     """hint: level already stated by the source (e.g. Gupy's vacancy type)."""
     if hint:
@@ -56,7 +68,8 @@ def detect_level(title, hint=None):
 
 def detect_area(title):
     t = _fold(title)
-    return next((area for area, rx in _AREAS if rx.search(t)), None)
+    area = next((area for area, rx in _AREAS if rx.search(t)), None)
+    return None if area == Area.ENGINEERING and _ALIEN.search(title or "") else area
 
 
 _stack_cache = {}
@@ -135,6 +148,8 @@ SALARY_WEIGHT = 15
 def jobs_for(profile):
     """Hard filters: open, area, level, work model, location (remote and unknown location always pass)."""
     qs = Job.objects.filter(closed_at=None).exclude(deadline__lt=timezone.now())
+    qs = qs.exclude(area=Area.ENGINEERING, title__iregex=ALIEN_ENG)  # vagas já coletadas de engenharias alheias
+    qs = qs.exclude(area=Area.ENGINEERING, title__iregex=ALIEN_ENG)  # vagas já coletadas de engenharias alheias
     if profile.areas:
         qs = qs.filter(area__in=profile.areas)
     if profile.levels:
