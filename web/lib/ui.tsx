@@ -40,6 +40,14 @@ export const brl = (v: string | number | null | undefined) =>
 
 export const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("pt-BR") : "");
 
+/** "fecha em N dias" when the deadline is within 14 days; nothing otherwise. */
+export function DeadlineTag({ iso }: { iso: string | null }) {
+  if (!iso) return null;
+  const d = Math.ceil((new Date(iso.length === 10 ? iso + "T23:59:59" : iso).getTime() - Date.now()) / 86400000);
+  if (d < 0 || d > 14) return null;
+  return <span className="due" title={`Prazo: ${day(iso)}`}>{d === 0 ? "fecha hoje" : d === 1 ? "fecha amanhã" : `fecha em ${d} dias`}</span>;
+}
+
 export function ago(iso: string) {
   const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
   const rtf = new Intl.RelativeTimeFormat("pt-BR", { numeric: "auto" });
@@ -144,6 +152,7 @@ export function Telemetry({
           <span>{where(job)}</span>
           <span>{LEVEL_LABEL[job.level]}</span>
           <span>{job.salary ? brl(job.salary) : "Bolsa não informada"}</span>
+          <DeadlineTag iso={job.deadline} />
         </div>
         <div className="score">
           <span className="big num" style={{ color: best ? "var(--purple)" : undefined }}>{job.score}</span>

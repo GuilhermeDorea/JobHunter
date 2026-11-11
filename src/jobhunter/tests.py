@@ -115,7 +115,8 @@ class ApiFlow(TestCase):
         self.assertEqual(manual.status_code, 201)
 
         self.assertEqual(self.call("post", f"/api/applications/{card['id']}/analyze").status_code, 400)
-        self.call("patch", f"/api/applications/{card['id']}", {"status": "INTERVIEW"})
+        r = self.call("patch", f"/api/applications/{card['id']}", {"status": "INTERVIEW", "deadline": "2026-11-17"})
+        self.assertEqual(r.json()["deadline"], "2026-11-17")
         r = self.call("patch", f"/api/applications/{card['id']}", {"status": "REJECTED", "notes": "caí no SQL"})
         self.assertEqual(r.json()["rejected_at_stage"], "INTERVIEW")
 

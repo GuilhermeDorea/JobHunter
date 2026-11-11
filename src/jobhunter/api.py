@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from datetime import timezone as dt_tz
 from decimal import Decimal
 
@@ -365,6 +365,7 @@ class ApplicationPatch(Schema):
     status: Application.Status | None = None
     notes: str | None = Field(None, max_length=20000)
     salary: Decimal | None = Field(None, ge=0, le=100000)
+    deadline: date | None = None
 
 
 class ApplicationOut(Schema):
@@ -377,6 +378,7 @@ class ApplicationOut(Schema):
     rejected_at_stage: str
     notes: str
     salary: Decimal | None
+    deadline: date | None
     created_at: datetime
     updated_at: datetime
     job_closed: bool
@@ -389,6 +391,7 @@ def _app_out(a):
     return {
         **{f: getattr(a, f) for f in ("id", "job_id", "title", "company", "url", "status", "rejected_at_stage",
                                       "notes", "salary", "created_at", "updated_at")},
+        "deadline": a.deadline or (a.job.deadline.date() if a.job and a.job.deadline else None),
         "job_closed": bool(a.job and a.job.closed_at),
         "company_logo": a.job.company_logo if a.job else "",
         "analysis": last,

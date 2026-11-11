@@ -87,7 +87,7 @@ export type Analysis = { text: string; created_at: string };
 export type Application = {
   id: number; job_id: number | null; title: string; company: string; url: string; status: string;
   rejected_at_stage: string; notes: string; salary: string | number | null; created_at: string;
-  updated_at: string; job_closed: boolean; company_logo: string; analysis: Analysis | null;
+  deadline: string | null;   updated_at: string; job_closed: boolean; company_logo: string; analysis: Analysis | null;
 };
 export type Profile = {
   areas: string[]; levels: string[]; work_models: string[]; state: string; city: string;

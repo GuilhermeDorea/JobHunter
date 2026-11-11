@@ -257,3 +257,4 @@ textarea.in{resize:vertical;line-height:1.45}
 .gen .msg,.gen .small{margin:0}
 .sg{margin-top:12px}
 .sgl{display:block;font:700 12px var(--disp);letter-spacing:.1em;text-transform:uppercase;color:var(--tx2);margin-bottom:6px}
+.due{font:700 10px var(--disp);letter-spacing:.1em;text-transform:uppercase;color:#000;background:var(--red);padding:1px 6px;border-radius:3px;white-space:nowrap}

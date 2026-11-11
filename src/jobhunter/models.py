@@ -103,6 +103,7 @@ class Application(models.Model):
     rejected_at_stage = models.CharField(max_length=15, choices=Status.choices, blank=True)
     notes = models.TextField(blank=True)
     salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    deadline = models.DateField(null=True, blank=True)  # application deadline; falls back to the job's
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

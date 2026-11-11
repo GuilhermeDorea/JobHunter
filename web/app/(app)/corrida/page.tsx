@@ -6,7 +6,7 @@ import Markdown from "react-markdown";
 import {
   api, errMsg, FINAL, PIPELINE, STATUS_CLASS, STATUS_LABEL, type Analysis, type Application,
 } from "@/lib/api";
-import { ago, brl, ErrorBox, Logo, Modal, useFetch } from "@/lib/ui";
+import { ago, brl, DeadlineTag, ErrorBox, Logo, Modal, useFetch } from "@/lib/ui";
 
 const stageIndex = (a: Application) => {
   const s = a.status === "REJECTED" ? a.rejected_at_stage : a.status;
@@ -132,6 +132,7 @@ function Card({ a, open }: { a: Application; open: () => void }) {
       </button>
       <div className="ln">
         <span>{ago(a.updated_at)}{a.job_closed && <span className="closed"> · vaga encerrada</span>}</span>
+        <DeadlineTag iso={a.deadline} />
         {a.status === "REJECTED" && (
           <>
             <span className="rej"><i />{a.rejected_at_stage ? `caiu em ${STATUS_LABEL[a.rejected_at_stage]}` : "reprovada"}</span>
@@ -184,6 +185,7 @@ function Detail({ a, onClose, onChange, onDeleted }: {
   const [status, setStatus] = useState(a.status);
   const [notes, setNotes] = useState(a.notes);
   const [salary, setSalary] = useState(a.salary == null ? "" : String(Number(a.salary)));
+  const [deadline, setDeadline] = useState(a.deadline ?? "");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -194,7 +196,7 @@ function Detail({ a, onClose, onChange, onDeleted }: {
     setMsg(null);
     try {
       onChange(await api<Application>(`/api/applications/${a.id}`, {
-        method: "PATCH", body: { status, notes, salary: salary === "" ? null : Number(salary) },
+        method: "PATCH", body: { status, notes, salary: salary === "" ? null : Number(salary), deadline: deadline || null },
       }));
       setMsg({ ok: true, text: "Salvo" });
     } catch (e) {
@@ -249,6 +251,10 @@ function Detail({ a, onClose, onChange, onDeleted }: {
       <div className="f">
         <label htmlFor="d-salary">Bolsa ou salário (R$)</label>
         <input id="d-salary" className="in num" type="number" min={0} max={100000} step={50} value={salary} onChange={(e) => setSalary(e.target.value)} placeholder={a.salary == null ? "não informado" : brl(a.salary)} />
+      </div>
+      <div className="f">
+        <label htmlFor="d-deadline">Prazo de inscrição</label>
+        <input id="d-deadline" className="in" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
       </div>
       <div className="f">
         <label htmlFor="d-notes">Anotações</label>
