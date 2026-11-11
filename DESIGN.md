@@ -2,23 +2,23 @@
 name: JobHunter
 description: Vagas de estágio, trainee e júnior ranqueadas como uma torre de cronometragem de F1.
 colors:
-  asphalt: "#050506"
-  pit-panel: "#0D0D10"
-  tower-row: "#121216"
-  tower-row-hover: "#1A1A20"
-  grid-line: "#24242B"
-  chalk: "#F4F4F5"
-  chalk-dim: "#A1A1AA"
-  chalk-faint: "#71717A"
-  fastest-purple: "#B15CFF"
-  sector-green: "#1FE074"
-  race-control-yellow: "#FFD60A"
-  red-flag: "#FF3B30"
-  applied-blue: "#4C7DFF"
-  interview-orange: "#FF8A00"
-  saved-gray: "#C7C7CF"
-  withdrawn-gray: "#8A8A93"
-  tile-white: "#FFFFFF"
+  asphalt: "#0C0C0F"
+  pit-panel: "#131317"
+  tower-row: "#18181D"
+  tower-row-hover: "#202027"
+  grid-line: "#2A2A32"
+  chalk: "#E6E6EA"
+  chalk-dim: "#A4A4AE"
+  chalk-faint: "#8E8E98"
+  fastest-purple: "#A882F0"
+  sector-green: "#4CCB86"
+  race-control-yellow: "#E9C547"
+  red-flag: "#E8655C"
+  applied-blue: "#6E8FE8"
+  interview-orange: "#E8934A"
+  saved-gray: "#B4B4BC"
+  withdrawn-gray: "#9A9AA4"
+  tile-white: "#DCDCE1"
 typography:
   display:
     fontFamily: "Saira Semi Condensed, system-ui, sans-serif"
@@ -68,7 +68,7 @@ components:
     rounded: "{rounded.control}"
     padding: "10px 16px"
   button-primary-hover:
-    backgroundColor: "#DADADF"
+    backgroundColor: "#C8C8CE"
   button-secondary:
     backgroundColor: "{colors.pit-panel}"
     textColor: "{colors.chalk}"
@@ -114,6 +114,8 @@ components:
 **Creative North Star: "The Timing Tower"**
 
 JobHunter reads like an F1 broadcast graphic, not a SaaS dashboard. Jobs are drivers in a ranking tower on a near-black track; the selected one opens in a telemetry panel that shows exactly why it scored. Applications then run a race board where every stage owns a color. Density is high and scannable: thin rows, tabular numbers, condensed caps.
+
+Tones are deliberately softened (no pure black or white, neons pulled toward gray) so long sessions do not glare.
 
 The material is broadcast overlay: flat dark panels, white slanted tiles for "on air" states, thin hairline borders, and color used only as data (sector bars, tyre rings, stage colors, the one purple best score). Nothing glows, nothing floats.
 

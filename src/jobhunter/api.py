@@ -369,7 +369,8 @@ CV_IMPORT_PROMPT = """Converta o currículo abaixo (texto extraído de PDF) para
  "achievements": ["..."]}}
 
 Regras: copie o conteúdo fielmente, sem inventar nem resumir. Corrija acentos quebrados pela extração do PDF
-(ex.: "Experiˆencia" -> "Experiência", "manutenc ¸˜ao" -> "manutenção"). Idiomas e certificações entram em "skills"
+(ex.: "Experiˆencia" -> "Experiência", "manutenc ¸˜ao" -> "manutenção"), mas nunca mude a grafia de nomes próprios,
+e-mails e links: copie exatamente como estão (ex.: "Dorea" continua "Dorea"). Idiomas e certificações entram em "skills"
 (ex.: group "Inglês"). Campos ausentes ficam "" ou [].
 
 Currículo:
