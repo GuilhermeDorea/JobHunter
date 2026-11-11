@@ -58,6 +58,13 @@ class Rules(TestCase):
         self.assertEqual((why["skills_points"], why["salary_points"]), (42, 8))
         self.assertEqual(score([], Decimal("700"), [], Decimal("1500"))[0], 42)  # neutral skills (42.5), pay under 50% = 0
 
+    def test_fix_accents(self):
+        from .api import fix_accents
+
+        self.assertEqual(fix_accents("Guilherme D´orea"), "Guilherme Dórea")
+        self.assertEqual(fix_accents("Experiˆencia em manutenc ¸˜ao"), "Experiência em manutenção")
+        self.assertEqual(fix_accents("Python ´e ´otimo, Avi^onica"), "Python é ótimo, Avi^onica")
+
     def test_gupy_item(self):
         j = {"id": 1, "name": "Estágio em TI", "type": "vacancy_type_internship", "workplaceType": "hybrid",
              "state": "Ceará", "city": "Fortaleza", "jobUrl": "https://x.gupy.io/job/1", "careerPageName": "ACME",

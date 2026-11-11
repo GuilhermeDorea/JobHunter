@@ -172,6 +172,19 @@ def put_profile(request, data: ProfileIn):
     return _profile_out(p)
 
 
+_SPACING_ACCENTS = {"´": "́", "`": "̀", "ˋ": "̀", "ˆ": "̂", "˜": "̃", "¨": "̈"}
+
+
+def fix_accents(text):
+    """LaTeX PDFs come out of pypdf as 'D´orea', 'Experiˆencia', 'manutenc ¸˜ao'. Rejoin accent + letter."""
+    import re
+    import unicodedata
+
+    text = re.sub(r"([cC])\s?¸", lambda m: "ç" if m[1] == "c" else "Ç", text)
+    text = re.sub(r"([´`ˋˆ˜¨])\s?([A-Za-z])", lambda m: m[2] + _SPACING_ACCENTS[m[1]], text)
+    return unicodedata.normalize("NFC", text)
+
+
 @api.post("/profile/resume", response=ProfileOut)
 def upload_resume(request, file: File[UploadedFile]):
     """PDF -> plain text. Only the text is kept."""
@@ -181,7 +194,7 @@ def upload_resume(request, file: File[UploadedFile]):
     if file.size > 5 * 1024 * 1024:
         raise HttpError(400, "PDF maior que 5 MB.")
     try:
-        text = "\n".join(page.extract_text() or "" for page in PdfReader(file).pages).strip()
+        text = fix_accents("\n".join(page.extract_text() or "" for page in PdfReader(file).pages).strip())
     except (PdfReadError, ValueError):
         raise HttpError(400, "Não consegui ler esse PDF.")
     if not text:
@@ -369,8 +382,7 @@ CV_IMPORT_PROMPT = """Converta o currículo abaixo (texto extraído de PDF) para
  "achievements": ["..."]}}
 
 Regras: copie o conteúdo fielmente, sem inventar nem resumir. Corrija acentos quebrados pela extração do PDF
-(ex.: "Experiˆencia" -> "Experiência", "manutenc ¸˜ao" -> "manutenção"), mas nunca mude a grafia de nomes próprios,
-e-mails e links: copie exatamente como estão (ex.: "Dorea" continua "Dorea"). Idiomas e certificações entram em "skills"
+(ex.: "Experiˆencia" -> "Experiência", "D´orea" -> "Dórea"), inclusive no nome; e-mails e links ficam exatamente como estão. Idiomas e certificações entram em "skills"
 (ex.: group "Inglês"). Campos ausentes ficam "" ou [].
 
 Currículo:
